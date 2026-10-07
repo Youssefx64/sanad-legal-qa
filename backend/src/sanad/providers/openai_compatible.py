@@ -20,6 +20,20 @@ from sanad.providers.base import (
 logger = logging.getLogger(__name__)
 
 
+def _is_unrecoverable_quota_error(e: Exception) -> bool:
+    """Detect if an API error is due to an exhausted account quota (cannot be resolved by retrying)."""
+    if isinstance(e, httpx.HTTPStatusError):
+        resp = e.response
+        if resp is not None:
+            text = resp.text.lower()
+            if any(
+                term in text
+                for term in ("free-models-per-day", "quota", "credit", "insufficient", "exceeded")
+            ):
+                return True
+    return False
+
+
 class OpenAICompatibleChatProvider(ChatProvider):
     """Chat provider speaking standard OpenAI `/chat/completions` protocol."""
 
@@ -97,6 +111,9 @@ class OpenAICompatibleChatProvider(ChatProvider):
                     )
             except (httpx.HTTPStatusError, httpx.RequestError) as e:
                 last_exception = e
+                if _is_unrecoverable_quota_error(e):
+                    logger.warning("Unrecoverable quota error encountered; skipping retries: %s", e)
+                    raise
                 # Retry on 429 or 5xx
                 status = getattr(getattr(e, "response", None), "status_code", 500)
                 if status in (429, 500, 502, 503, 504) and attempt < self.max_retries - 1:
@@ -166,6 +183,11 @@ class OpenAICompatibleChatProvider(ChatProvider):
                     return
             except (httpx.HTTPStatusError, httpx.RequestError) as e:
                 last_exception = e
+                if _is_unrecoverable_quota_error(e):
+                    logger.warning(
+                        "Unrecoverable quota error encountered in stream; skipping retries: %s", e
+                    )
+                    raise
                 status = getattr(getattr(e, "response", None), "status_code", 500)
                 if status in (429, 500, 502, 503, 504) and attempt < self.max_retries - 1:
                     wait_time = 2**attempt
@@ -264,6 +286,12 @@ class OpenAICompatibleEmbeddingProvider(EmbeddingProvider):
                             self._dimension = len(batch_embeds[0])
                         break
                 except (httpx.HTTPStatusError, httpx.RequestError) as e:
+                    if _is_unrecoverable_quota_error(e):
+                        logger.warning(
+                            "Unrecoverable quota error encountered in embed; skipping retries: %s",
+                            e,
+                        )
+                        raise
                     status = getattr(getattr(e, "response", None), "status_code", 500)
                     if status in (429, 500, 502, 503, 504) and attempt < self.max_retries - 1:
                         wait_time = 2**attempt
