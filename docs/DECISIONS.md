@@ -57,5 +57,11 @@
 - **Decision**: Implemented `guardrails/pii.py` regex scrubber detecting Egyptian 14-digit National IDs (`[23]\d{13}`), local telephone numbers (`01[0125]\d{8}`), emails, and IBANs (`EG\d{2}[A-Za-z0-9]{25}`) before prompt formation.
 - **Consequences**: Client confidentiality protected upstream while preserving query semantics.
 
+## DECISION-011: FastAPI & BentoML Serving Architecture
+- **Context**: The backend serving layer must decouple HTTP transport from business logic, provide synchronous REST and SSE token streaming, provide full corpus navigation APIs, enforce auth on admin operations, and support cloud packaging.
+- **Decision**: Implemented modular FastAPI application under `backend/src/sanad/api/` with dependency injection (`deps.py`), standardized error schemas (`errors.py`), Server-Sent Events (`/ask/stream`), and Prometheus metrics (`/metrics`). Packaged the service into a containerizable BentoML service (`bento_service.py`) and `bentofile.yaml`.
+- **Consequences**: Independent serving stack, full SSE compliance with modern frontend clients, and multi-cloud container readiness.
+
+
 
 

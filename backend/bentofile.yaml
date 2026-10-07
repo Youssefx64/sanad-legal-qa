@@ -1,0 +1,20 @@
+service: "sanad.bento_service:SanadService"
+labels:
+  owner: "sanad-team"
+  project: "sanad-legal-qa"
+python:
+  packages:
+    - fastapi>=0.110.0
+    - uvicorn>=0.28.0
+    - pydantic>=2.6.0
+    - pydantic-settings>=2.2.0
+    - httpx>=0.27.0
+    - qdrant-client>=1.8.0
+    - rank-bm25>=0.2.2
+    - pymupdf>=1.23.0
+    - pyyaml>=6.0.1
+    - sse-starlette>=2.0.0
+include:
+  - "src/sanad/**/*.py"
+  - "../config/*.yaml"
+  - "../data/processed/*.json"
