@@ -1,0 +1,73 @@
+graph TD
+    subgraph Clients["Client Layer"]
+        WebUI["React 18 + Vite Web UI<br/>(Bilingual RTL/LTR, SSE)"]
+        CLI["Sanad Typer CLI<br/>(extract, ingest, eval, drift)"]
+        Locust["Locust Load Generator<br/>(50 Concurrent Users)"]
+    end
+
+    subgraph Ingress["Traffic Management & Routing"]
+        Nginx["Nginx Reverse Proxy & Canary<br/>(5% Canary / 95% Stable Split)"]
+    end
+
+    subgraph Serving["Backend Serving Layer"]
+        FastAPI["FastAPI REST & SSE Service<br/>(:8000)"]
+        Bento["BentoML Service Packaging<br/>(bentofile.yaml)"]
+    end
+
+    subgraph Preprocessing["Pre-Processing & Guardrails"]
+        PII["Egyptian PII Scrubber<br/>(National ID, Phone, IBAN)"]
+        Normalizer["Arabic Normalizer<br/>(Alef, Yaa, Diacritics, Digits)"]
+    end
+
+    subgraph RetrievalEngine["Hybrid Retrieval Engine"]
+        Exact["Exact Article Lookup<br/>(Regex '[المادة N]')"]
+        Dense["Dense Semantic Search<br/>(Qdrant Vector DB)"]
+        Sparse["Sparse Keyword Search<br/>(BM25Okapi)"]
+        RRF["Reciprocal Rank Fusion<br/>(RRF k=60)"]
+        Reranker["Cross-Encoder Reranker<br/>(Optional)"]
+    end
+
+    subgraph Generation["Generation & Grounding Layer"]
+        Prompts["Legal Persona & Prompts<br/>(Strict Grounding Directive)"]
+        LLM["Provider Factory<br/>(OpenRouter / Ollama / Local HF)"]
+        Grounding["Grounding Guardrail<br/>(Citation & Context Verification)"]
+        Refusal["Canonical Refusal Fallback<br/>('لم أجد أساساً في القانون...')"]
+    end
+
+    subgraph Observability["MLOps & Observability"]
+        MLflow["MLflow Tracking & Registry<br/>(sanad-rag-config: Production)"]
+        Langfuse["Langfuse Tracing<br/>(Spans & Latency Breakdown)"]
+        Prometheus["Prometheus Metrics<br/>(RPS, P95 Latency, Cost USD)"]
+        Grafana["Grafana Dashboards<br/>(:3002)"]
+        Drift["Semantic Drift Detector<br/>(KS-test & Cosine Distance)"]
+        RAGAS["RAGAS Quality Gate<br/>(Faithfulness >= 0.75)"]
+    end
+
+    %% Flow connections
+    WebUI --> Nginx
+    Locust --> Nginx
+    CLI --> FastAPI
+    Nginx --> FastAPI
+    FastAPI --> PII
+    PII --> Normalizer
+    Normalizer --> Exact
+    Normalizer --> Dense
+    Normalizer --> Sparse
+    Exact --> RRF
+    Dense --> RRF
+    Sparse --> RRF
+    RRF --> Reranker
+    Reranker --> Prompts
+    Prompts --> LLM
+    LLM --> Grounding
+    Grounding -->|Grounded| FastAPI
+    Grounding -->|Ungrounded Hallucination| Refusal
+    Refusal --> FastAPI
+
+    %% Observability telemetry
+    FastAPI -.-> Langfuse
+    FastAPI -.-> Prometheus
+    Prometheus -.-> Grafana
+    FastAPI -.-> Drift
+    FastAPI -.-> RAGAS
+    RAGAS -.-> MLflow

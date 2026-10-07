@@ -89,3 +89,11 @@
   3. Pre-Provisioned Grafana Dashboards: Added `infra/grafana/dashboards/sanad_overview.json` and datasource auto-provisioning displaying latency percentiles, cost curves, faithfulness gauges, and throughput.
   4. Embedding Drift Detection: Implemented `observability/drift.py` and `sanad drift` CLI using Kolmogorov-Smirnov (KS-test) and cosine distance relative to the statutory centroid, outputting structured reports (`reports/drift_report.json`).
 - **Consequences**: Real-time operational visibility, traceable cost management, and early warning for query distribution shifts.
+
+## DECISION-015: Multi-Container Production Orchestration, Service Verification, and Operations
+- **Context**: The entire Sanad system spans 7 cooperating services (Frontend, Backend, Qdrant, MLflow, Langfuse, Prometheus, Grafana). Production deployment requires reproducible local orchestration, zero hardcoded secrets, automated health probes, and complete operational documentation.
+- **Decision**: Implemented unified container orchestration and operational tooling:
+  1. Docker Compose Stack: Authored `infra/docker-compose.yml` declaring all 7 microservices with isolated internal networking, persistent volumes, environment interpolation via `.env`, and health checks.
+  2. Service Health Validation: Implemented `infra/check_services.sh` to probe every endpoint across the stack and report ready/degraded states.
+  3. Comprehensive Documentation: Created system architecture specs (`docs/ARCHITECTURE.md`, `docs/architecture.mmd`), operational runbooks for emergency response, upgrades, and backups (`docs/RUNBOOK.md`), and an ITI-graded production README with performance benchmarks.
+- **Consequences**: Complete out-of-the-box reproducibility (`docker compose up`), turn-key observability, and standardized runbooks for on-call engineers.
