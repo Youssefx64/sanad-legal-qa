@@ -1,0 +1,26 @@
+# Architectural Decision Records (ADRs) & Engineering Decisions
+
+## DECISION-001: Monorepo Architecture & Isolation
+- **Context**: Backend and frontend must be strictly isolated with no shared code, independent dependency files, separate Dockerfiles, and communicate solely via HTTP REST and SSE.
+- **Decision**: Backend is packaged under `backend/` using standard `pyproject.toml` with `src/sanad` layout. Frontend is in `frontend/` using Vite + React + TypeScript + Tailwind. Monorepo root coordinates development via `Makefile` and `docker-compose.yml`.
+- **Consequences**: Clean separation of concerns, independent deployment, no coupling between UI and server runtimes.
+
+## DECISION-002: Provider-Agnostic Model Registry
+- **Context**: LLM and embedding models must be configurable at runtime without code changes (`config/models.yaml`).
+- **Decision**: Implemented typed Pydantic models for registry validation with support for OpenRouter, OpenAI-compatible APIs, Ollama, and Local Hugging Face / Sentence Transformers.
+- **Consequences**: Adding or updating models is purely a YAML configuration change. Vector store collections are keyed by model ID, dimension, and corpus hash to prevent vector space contamination.
+
+## DECISION-003: Corpus Extraction Strategy for Bilingual Egyptian Civil Code PDF
+- **Context**: The source document `data/raw/egyptian_civil_code_1948.pdf` (formerly `1576751803.pdf`) is a 2-column bilingual layout with Arabic on one side and English on the other, containing Arabic-Indic digits, detached diacritics, page furniture, and repealed articles 54–80.
+- **Decision**: Use PyMuPDF (`fitz`) with column-aware block extraction. Identify Arabic and English article markers (`مادة` / `Article`) to bind corresponding texts. Normalize Arabic text (alef, yaa, diacritics, Arabic-Indic digits) while retaining `text_ar_raw` for exact fidelity. Flag articles 54–80 as `is_repealed: true` without dropping them.
+- **Consequences**: Clean, reproducible 1..1149 article corpus in `data/processed/articles.json` with strict validation gates.
+
+## DECISION-004: Vector Database and Multi-Model Collections
+- **Context**: Different embedding models have different vector dimensions and semantic spaces.
+- **Decision**: Use Qdrant with collections named `{model_id}_{dim}_{corpus_hash}`. Auto-detect vector dimension on first embedding call if not specified in config.
+- **Consequences**: Multiple embedding models can coexist safely without indexing conflicts.
+
+## DECISION-005: Hybrid Retrieval & Citation Grounding
+- **Context**: Hallucination is strictly unacceptable in legal Q&A. System must answer only from retrieved articles.
+- **Decision**: Combine dense vector retrieval with BM25 keyword search using Reciprocal Rank Fusion (RRF). Detect explicit article mentions in queries (e.g. "المادة 147") for deterministic article lookup. Generative answers must pass citation grounding check; citations to unretrieved articles are rejected or flagged.
+- **Consequences**: High precision and verifiable source lineage.

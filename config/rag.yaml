@@ -1,0 +1,26 @@
+chunking:
+  chunk_strategy: "article_paragraph"  # "article" | "article_paragraph"
+  max_chars: 1200
+  overlap: 100
+
+retrieval:
+  top_k: 5
+  dense_weight: 0.7
+  bm25_weight: 0.3
+  enable_bm25: true
+  enable_exact_lookup: true
+  enable_reranker: false
+  reranker_type: "none"  # "none" | "cross_encoder" | "llm"
+  min_relevance_score: 0.35
+  embedding_content: "ar" # "ar" | "en" | "ar+en"
+
+generation:
+  max_context_tokens: 3000
+  language_mode: "auto"  # "auto" | "ar" | "en"
+  refusal_message_ar: "لم أجد أساساً في القانون المدني للإجابة عن هذا السؤال."
+  refusal_message_en: "I could not find a basis in the Egyptian Civil Code to answer this question."
+
+guardrails:
+  enable_pii_masking: true
+  enable_grounding_check: true
+  grounding_threshold: 0.5

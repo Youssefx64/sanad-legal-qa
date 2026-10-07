@@ -1,0 +1,70 @@
+defaults:
+  chat_model: openrouter-chat-1
+  embedding_model: openrouter-embed-1
+  judge_model: openrouter-chat-1        # used by RAGAS; should differ from answering model when possible
+
+chat_models:
+  - id: openrouter-chat-1               # internal id used by the API/UI
+    label: "Chat Model 1 (placeholder)" # shown in the UI
+    provider: openrouter                # openrouter | openai_compatible | ollama | vllm
+    model: "REPLACE_ME/provider-model-name"
+    params: { temperature: 0.1, max_tokens: 1024 }
+    pricing: { input_per_1m: 0.0, output_per_1m: 0.0 }
+    supports_streaming: true
+    enabled: true
+
+  - id: openrouter-chat-2
+    label: "Chat Model 2 (placeholder)"
+    provider: openrouter
+    model: "REPLACE_ME/second-chat-model"
+    params: { temperature: 0.1, max_tokens: 1024 }
+    pricing: { input_per_1m: 0.0, output_per_1m: 0.0 }
+    supports_streaming: true
+    enabled: true
+
+  - id: ollama-chat-1
+    label: "Ollama Local (placeholder)"
+    provider: ollama
+    model: "qwen2.5:7b-instruct"
+    params: { temperature: 0.1, max_tokens: 1024 }
+    pricing: { input_per_1m: 0.0, output_per_1m: 0.0 }
+    supports_streaming: true
+    enabled: false
+
+embedding_models:
+  - id: openrouter-embed-1
+    label: "Embedding Model 1 (placeholder)"
+    provider: openrouter                # openrouter | openai_compatible | ollama | local_hf
+    model: "REPLACE_ME/embedding-model-name"
+    dimension: null                     # auto-detected on first call if null
+    query_prefix: ""                    # for models that need instruction prefixes
+    document_prefix: ""
+    batch_size: 64
+    enabled: true
+
+  - id: openai-compat-embed-1
+    label: "OpenAI Compatible Embedding (placeholder)"
+    provider: openai_compatible
+    model: "text-embedding-3-small"
+    dimension: 1536
+    query_prefix: ""
+    document_prefix: ""
+    batch_size: 64
+    enabled: true
+
+  - id: local-hf-embed-1
+    label: "Local sentence-transformers (placeholder)"
+    provider: local_hf
+    model: "REPLACE_ME/hf-model-name"
+    device: auto
+    enabled: false
+
+providers:
+  openrouter:
+    base_url: "https://openrouter.ai/api/v1"
+    api_key_env: OPENROUTER_API_KEY
+  openai_compatible:
+    base_url_env: OPENAI_COMPAT_BASE_URL
+    api_key_env: OPENAI_COMPAT_API_KEY
+  ollama:
+    base_url: "http://localhost:11434"
