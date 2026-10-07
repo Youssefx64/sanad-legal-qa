@@ -81,3 +81,11 @@
   5. Canary Traffic Management & Load Testing: Authored `infra/nginx/canary.conf` for 5/95 weighted split and `tests/load/locustfile.py` simulating 50 concurrent users with p95 latency under 500ms.
 - **Consequences**: Provable statutory fidelity, automated regression prevention, and production-grade delivery practices.
 
+## DECISION-014: Full-Stack Observability, Tracing, Metrics, and Semantic Drift Detection
+- **Context**: In production legal AI systems, observability requires distributed request tracing (Langfuse), real-time infrastructure and cost monitoring (Prometheus & Grafana), and statistical query drift detection against the legal corpus.
+- **Decision**: Implemented observability suite:
+  1. Langfuse Distributed Tracing: Built `observability/tracing.py` creating spans (`normalize`, `retrieve`, `rerank`, `generate`, `guardrails`), tracking prompt/completion tokens, latency, and attaching RAGAS faithfulness scores.
+  2. Prometheus Instrumentation: Exported request latency histograms, LLM token counts, estimated dollar costs based on `models.yaml` price schedules, retrieval score histograms, and statutory refusal rates.
+  3. Pre-Provisioned Grafana Dashboards: Added `infra/grafana/dashboards/sanad_overview.json` and datasource auto-provisioning displaying latency percentiles, cost curves, faithfulness gauges, and throughput.
+  4. Embedding Drift Detection: Implemented `observability/drift.py` and `sanad drift` CLI using Kolmogorov-Smirnov (KS-test) and cosine distance relative to the statutory centroid, outputting structured reports (`reports/drift_report.json`).
+- **Consequences**: Real-time operational visibility, traceable cost management, and early warning for query distribution shifts.

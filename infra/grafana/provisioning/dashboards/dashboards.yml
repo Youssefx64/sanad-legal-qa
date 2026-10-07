@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: "Sanad Dashboards"
+    orgId: 1
+    folder: "Sanad Legal QA"
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /etc/grafana/provisioning/dashboards

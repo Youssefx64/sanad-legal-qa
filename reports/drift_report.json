@@ -1,0 +1,14 @@
+{
+  "sample_size": 20,
+  "mean_cosine_distance": 1.020569476187085,
+  "threshold_distance": 0.45,
+  "ks_statistic": 0.41,
+  "ks_p_value": 0.0048887580595982204,
+  "drift_detected": true,
+  "verdict": "Query distribution significantly drifted from corpus centroid. Re-indexing or query routing recommended.",
+  "details": {
+    "distance_min": 0.7442359958506337,
+    "distance_max": 1.2265026103025392,
+    "distance_std": 0.13220866595472783
+  }
+}

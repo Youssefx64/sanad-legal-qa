@@ -281,9 +281,39 @@ def evaluate(
 
 
 @app.command()
-def drift() -> None:
-    """Run embedding drift detection (implemented in Phase 8)."""
-    typer.secho("Drift command will be executed in Phase 8.", fg=typer.colors.YELLOW)
+def drift(
+    output: Annotated[
+        Path,
+        typer.Option("--output", "-o", help="Output path for drift JSON report"),
+    ] = Path("reports/drift_report.json"),
+    threshold: Annotated[
+        float,
+        typer.Option("--threshold", "-t", help="Cosine distance drift threshold"),
+    ] = 0.45,
+) -> None:
+    """Detect embedding distribution drift against the corpus centroid."""
+    import asyncio
+
+    from sanad.observability.drift import run_drift_check
+
+    typer.secho("Running embedding drift detection...", fg=typer.colors.CYAN)
+    try:
+        report = asyncio.run(run_drift_check(output_path=output, threshold=threshold))
+    except Exception as e:
+        typer.secho(f"Drift detection failed: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1) from e
+
+    typer.echo(report.to_markdown())
+    if report.drift_detected:
+        typer.secho(
+            "⚠️  ALERT: Semantic embedding drift detected!", fg=typer.colors.YELLOW, bold=True
+        )
+    else:
+        typer.secho(
+            "✅ Query embeddings are well-aligned with corpus centroid.",
+            fg=typer.colors.GREEN,
+            bold=True,
+        )
 
 
 if __name__ == "__main__":
