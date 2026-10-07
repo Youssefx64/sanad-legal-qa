@@ -9,7 +9,7 @@ setup:
 
 lint:
 	ruff check backend
-	mypy backend/src/sanad
+	mypy --config-file backend/pyproject.toml backend/src/sanad
 
 format:
 	ruff format backend
