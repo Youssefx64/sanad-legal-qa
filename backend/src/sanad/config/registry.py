@@ -222,4 +222,3 @@ def reset_model_registry() -> None:
     """Reset cached model registry (useful in tests)."""
     global _cached_registry
     _cached_registry = None
-

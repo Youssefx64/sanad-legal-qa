@@ -49,4 +49,3 @@ async def list_models(
         chat_models=chat_list,
         embedding_models=embed_list,
     )
-

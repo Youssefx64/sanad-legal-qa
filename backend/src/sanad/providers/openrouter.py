@@ -70,4 +70,3 @@ class OpenRouterEmbeddingProvider(OpenAICompatibleEmbeddingProvider):
             timeout=timeout,
             max_retries=max_retries,
         )
-

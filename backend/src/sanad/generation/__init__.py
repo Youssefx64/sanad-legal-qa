@@ -24,4 +24,3 @@ __all__ = [
     "format_context",
     "is_arabic_text",
 ]
-

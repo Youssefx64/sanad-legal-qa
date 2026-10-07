@@ -194,4 +194,3 @@ def test_settings_paths() -> None:
     assert settings.get_models_path().exists()
     assert settings.get_rag_path().exists()
     assert settings.get_data_dir().exists()
-
