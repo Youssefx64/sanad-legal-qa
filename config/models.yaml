@@ -1,6 +1,6 @@
 defaults:
   chat_model: nemotron-ultra-free
-  embedding_model: liquid-lfm-embed-free
+  embedding_model: nemotron-embed-free
   judge_model: nemotron-ultra-free
 
 chat_models:
