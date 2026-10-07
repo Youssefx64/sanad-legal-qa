@@ -13,3 +13,28 @@ stages:
           cache: true
       - reports/corpus_spotcheck.md:
           cache: false
+
+  validate:
+    cmd: python -m sanad.cli validate --articles-path data/processed/articles.json
+    deps:
+      - data/processed/articles.json
+      - backend/src/sanad/corpus/validate.py
+
+  ingest:
+    cmd: python -m sanad.cli ingest --articles-path data/processed/articles.json
+    deps:
+      - data/processed/articles.json
+      - backend/src/sanad/indexing/
+      - config/models.yaml
+      - config/rag.yaml
+
+  eval:
+    cmd: python -m sanad.cli eval --subset ci --gate
+    deps:
+      - data/eval/eval_questions.jsonl
+      - backend/src/sanad/evaluation/
+    outs:
+      - reports/ragas_results.json:
+          cache: false
+      - reports/ragas_results.md:
+          cache: false

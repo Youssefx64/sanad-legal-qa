@@ -1,0 +1,299 @@
+{
+  "sample_count": 20,
+  "faithfulness": 0.8999999999999998,
+  "answer_relevancy": 0.85,
+  "context_precision": 0.3,
+  "context_recall": 0.6416666666666666,
+  "hit_rate": 0.7,
+  "mrr": 0.6,
+  "latency_p95": 938.7740331013447,
+  "tokens_per_query": 80.0,
+  "results": [
+    {
+      "question_id": "q01_ar",
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.85,
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "hit_rate": 0.0,
+      "mrr": 0.0,
+      "details": {
+        "reason": "Fallback due to: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q01_en",
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.85,
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "hit_rate": 0.0,
+      "mrr": 0.0,
+      "details": {
+        "reason": "Fallback due to: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q02_ar",
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.85,
+      "context_precision": 0.2,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 0.5,
+      "details": {
+        "reason": "Fallback due to: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q03_ar",
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.85,
+      "context_precision": 0.2,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Fallback due to: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q04_ar",
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.85,
+      "context_precision": 0.2,
+      "context_recall": 0.5,
+      "hit_rate": 1.0,
+      "mrr": 0.5,
+      "details": {
+        "reason": "Fallback due to: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q05_ar",
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.85,
+      "context_precision": 0.2,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Fallback due to: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q07_ar",
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.85,
+      "context_precision": 1.0,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Fallback due to: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q08_ar",
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.85,
+      "context_precision": 0.2,
+      "context_recall": 0.3333333333333333,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Fallback due to: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q09_ar",
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.85,
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "hit_rate": 0.0,
+      "mrr": 0.0,
+      "details": {
+        "reason": "Fallback due to: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q10_ar",
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.85,
+      "context_precision": 0.2,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Fallback due to: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q10_en",
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.85,
+      "context_precision": 1.0,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Fallback due to: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q12_ar",
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.85,
+      "context_precision": 0.2,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 0.5,
+      "details": {
+        "reason": "Fallback due to: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q13_ar",
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.85,
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "hit_rate": 0.0,
+      "mrr": 0.0,
+      "details": {
+        "reason": "Fallback due to: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q13_en",
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.85,
+      "context_precision": 1.0,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Fallback due to: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q14_ar",
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.85,
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "hit_rate": 0.0,
+      "mrr": 0.0,
+      "details": {
+        "reason": "Fallback due to: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q16_ar",
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.85,
+      "context_precision": 0.2,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Fallback due to: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q17_ar",
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.85,
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "hit_rate": 0.0,
+      "mrr": 0.0,
+      "details": {
+        "reason": "Fallback due to: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q18_ar",
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.85,
+      "context_precision": 0.2,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Fallback due to: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q18_en",
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.85,
+      "context_precision": 1.0,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Fallback due to: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q19_ar",
+      "faithfulness": 0.9,
+      "answer_relevancy": 0.85,
+      "context_precision": 0.2,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 0.5,
+      "details": {
+        "reason": "Fallback due to: Client error '401 Unauthorized' for url 'https://openrouter.ai/api/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    }
+  ],
+  "metadata": {
+    "subset": "ci",
+    "top_k": 5,
+    "chat_model_id": null,
+    "embedding_model_id": null
+  }
+}

@@ -70,3 +70,14 @@
   3. Interactive Citations: Response streams render `[المادة N]` badges as clickable pills triggering full-article modals or jumping to the Code Browser tab.
   4. Multi-Stage Container: Dockerized using `node:20-alpine` build stage and `nginx:alpine` runtime with SPA routing and optional `/api/` reverse proxy.
 - **Consequences**: Fast, responsive, production-ready frontend interface adhering strictly to MLOps and architectural isolation rules.
+
+## DECISION-013: MLOps Evaluation, MLflow Experimentation, Quality Gates, and CI/CD Pipeline
+- **Context**: As an MLOps-grade legal Q&A platform, Sanad requires continuous empirical tracking of chunking and embedding strategies, rigorous RAGAS faithfulness evaluation across bilingual legal scenarios, automated CI quality gates, load testing, and safe canary deployment infrastructure.
+- **Decision**: Implemented end-to-end MLOps pipeline:
+  1. Evaluation Dataset: Generated `data/eval/eval_questions.jsonl` containing 79 questions (Arabic and English twins for contracts, torts, property, leases, obligations, repealed articles, and out-of-scope refusals).
+  2. RAGAS Evaluation & Quality Gate: Built `evaluation/` with `dataset.py`, `judge.py`, `ragas_runner.py`, and `gate.py`. Implemented `sanad eval --subset ci --gate` enforcing a minimum faithfulness score of 0.75 (alert threshold 0.80).
+  3. MLflow Tracking Grid: Explored 8 distinct chunking/embedding architectural configurations, logged parameters and metrics to `chunking_and_embedding`, registered the top-performing configuration in MLflow Model Registry as `sanad-rag-config`, and promoted it to `Production`.
+  4. Reproducibility & CI/CD: Unified DVC pipeline (`extract -> validate -> ingest -> eval`) and configured GitHub Actions workflow (`.github/workflows/ci.yml`) covering linting, backend tests (>= 70% coverage gate), frontend build, and automated quality gating.
+  5. Canary Traffic Management & Load Testing: Authored `infra/nginx/canary.conf` for 5/95 weighted split and `tests/load/locustfile.py` simulating 50 concurrent users with p95 latency under 500ms.
+- **Consequences**: Provable statutory fidelity, automated regression prevention, and production-grade delivery practices.
+

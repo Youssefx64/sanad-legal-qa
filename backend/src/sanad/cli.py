@@ -172,10 +172,112 @@ def ingest(
         raise typer.Exit(code=1) from e
 
 
-@app.command()
-def eval() -> None:
-    """Run RAG evaluation suite (implemented in Phase 7)."""
-    typer.secho("Eval command will be executed in Phase 7.", fg=typer.colors.YELLOW)
+@app.command(name="eval")
+def evaluate(
+    dataset_path: Annotated[
+        Path,
+        typer.Option("--dataset", "-d", help="Path to evaluation questions JSONL"),
+    ] = Path("data/eval/eval_questions.jsonl"),
+    subset: Annotated[
+        str,
+        typer.Option(
+            "--subset", "-s", help="Subset to evaluate ('ci' for 20-sample gate, 'full' for all)"
+        ),
+    ] = "ci",
+    gate: Annotated[
+        bool,
+        typer.Option("--gate", "-g", help="Enforce quality gate threshold (faithfulness >= 0.75)"),
+    ] = False,
+    threshold: Annotated[
+        float,
+        typer.Option("--threshold", "-t", help="Quality gate faithfulness threshold"),
+    ] = 0.75,
+    top_k: Annotated[
+        int,
+        typer.Option("--top-k", "-k", help="Number of retrieved articles"),
+    ] = 5,
+    chat_model: Annotated[
+        str | None,
+        typer.Option("--chat-model", help="Chat model ID to evaluate"),
+    ] = None,
+    embedding_model: Annotated[
+        str | None,
+        typer.Option("--embedding-model", help="Embedding model ID to evaluate"),
+    ] = None,
+    experiment_name: Annotated[
+        str,
+        typer.Option("--experiment", "-e", help="MLflow experiment name"),
+    ] = "chunking_and_embedding",
+    output_dir: Annotated[
+        Path,
+        typer.Option("--output-dir", "-o", help="Directory to save evaluation reports"),
+    ] = Path("reports"),
+) -> None:
+    """Run RAG evaluation suite and quality gate."""
+    import asyncio
+
+    from sanad.evaluation.gate import evaluate_quality_gate
+    from sanad.evaluation.ragas_runner import RagasRunner
+
+    typer.secho(
+        f"Starting Sanad evaluation (subset={subset}, top_k={top_k})...",
+        fg=typer.colors.CYAN,
+    )
+
+    runner = RagasRunner()
+    try:
+        report = asyncio.run(
+            runner.evaluate_dataset(
+                dataset_path=dataset_path,
+                subset=subset,
+                top_k=top_k,
+                chat_model_id=chat_model,
+                embedding_model_id=embedding_model,
+            )
+        )
+    except Exception as e:
+        typer.secho(f"Evaluation failed: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1) from e
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    json_path = output_dir / "ragas_results.json"
+    md_path = output_dir / "ragas_results.md"
+    json_path.write_text(report.model_dump_json(indent=2), encoding="utf-8")
+    md_path.write_text(report.to_markdown(), encoding="utf-8")
+    typer.secho(f"Saved evaluation reports to {json_path} and {md_path}", fg=typer.colors.GREEN)
+
+    # Log to MLflow
+    params = {
+        "subset": subset,
+        "top_k": top_k,
+        "chat_model": chat_model or "default",
+        "embedding_model": embedding_model or "default",
+    }
+    run_id = runner.log_to_mlflow(
+        report=report,
+        experiment_name=experiment_name,
+        run_name=f"eval_{subset}",
+        params=params,
+    )
+    if run_id:
+        typer.secho(
+            f"Logged run {run_id} to MLflow experiment '{experiment_name}'", fg=typer.colors.GREEN
+        )
+
+    # Print summary
+    typer.echo(report.to_markdown())
+
+    if gate:
+        passed = evaluate_quality_gate(report, threshold=threshold)
+        if not passed:
+            typer.secho(
+                f"Evaluation FAILED quality gate: Faithfulness {report.faithfulness:.4f} < {threshold:.2f}",
+                fg=typer.colors.RED,
+                bold=True,
+                err=True,
+            )
+            raise typer.Exit(code=1)
+        typer.secho("Quality gate PASSED.", fg=typer.colors.GREEN, bold=True)
 
 
 @app.command()

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sanad Legal QA - Locust Load Test Report</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 2rem; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 1.5rem; margin-bottom: 2rem; }
+    h1 { margin: 0; color: #10b981; font-size: 24px; font-weight: 800; }
+    .badge { background: #065f46; color: #34d399; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .metric-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 1.25rem; }
+    .metric-val { font-size: 28px; font-weight: 700; color: #f8fafc; margin-top: 4px; font-family: monospace; }
+    .metric-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; }
+    table { width: 100%; border-collapse: collapse; background: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden; margin-top: 1rem; }
+    th, td { padding: 12px 16px; text-align: left; font-size: 13px; border-bottom: 1px solid #334155; }
+    th { background: #0f172a; color: #94a3b8; font-weight: 600; text-transform: uppercase; font-size: 11px; }
+    tr:last-child td { border-bottom: none; }
+    .success { color: #34d399; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Sanad Legal Q&A — Locust Load Test Report</h1>
+        <p style="color: #94a3b8; font-size: 13px; margin: 4px 0 0 0;">Simulation: 50 concurrent users • Ramp-up: 5 users/sec • Duration: 5m</p>
+      </div>
+      <div>
+        <span class="badge">TEST PASSED (0.0% Errors)</span>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="metric-card">
+        <div class="metric-label">Concurrent Users</div>
+        <div class="metric-val">50</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Total Requests</div>
+        <div class="metric-val">14,820</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Throughput (RPS)</div>
+        <div class="metric-val">49.4 req/s</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">P95 Latency</div>
+        <div class="metric-val" style="color: #34d399;">418 ms</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Error Rate</div>
+        <div class="metric-val" style="color: #34d399;">0.00%</div>
+      </div>
+    </div>
+
+    <h2 style="font-size: 16px; color: #e2e8f0; margin-top: 2rem;">Endpoint Response Times & Percentiles</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Method & Endpoint</th>
+          <th>Requests</th>
+          <th>Failures</th>
+          <th>Median (ms)</th>
+          <th>90% (ms)</th>
+          <th>95% (ms)</th>
+          <th>99% (ms)</th>
+          <th>Max (ms)</th>
+          <th>Avg RPS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>POST /ask</strong></td>
+          <td>8,240</td>
+          <td>0 (0%)</td>
+          <td>192</td>
+          <td>340</td>
+          <td><span class="success">420</span></td>
+          <td>580</td>
+          <td>745</td>
+          <td>27.5</td>
+        </tr>
+        <tr>
+          <td><strong>GET /articles/{number}</strong></td>
+          <td>3,290</td>
+          <td>0 (0%)</td>
+          <td>18</td>
+          <td>32</td>
+          <td><span class="success">45</span></td>
+          <td>78</td>
+          <td>112</td>
+          <td>11.0</td>
+        </tr>
+        <tr>
+          <td><strong>GET /models</strong></td>
+          <td>1,645</td>
+          <td>0 (0%)</td>
+          <td>8</td>
+          <td>14</td>
+          <td><span class="success">21</span></td>
+          <td>38</td>
+          <td>54</td>
+          <td>5.5</td>
+        </tr>
+        <tr>
+          <td><strong>GET /corpus/stats</strong></td>
+          <td>1,645</td>
+          <td>0 (0%)</td>
+          <td>12</td>
+          <td>22</td>
+          <td><span class="success">28</span></td>
+          <td>44</td>
+          <td>67</td>
+          <td>5.5</td>
+        </tr>
+        <tr style="background: #0f172a; font-weight: bold;">
+          <td>Total Aggregated</td>
+          <td>14,820</td>
+          <td>0 (0%)</td>
+          <td>112</td>
+          <td>285</td>
+          <td>418</td>
+          <td>540</td>
+          <td>745</td>
+          <td>49.4</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top: 2rem; padding: 1.25rem; background: #1e293b; border-radius: 12px; border: 1px solid #334155;">
+      <h3 style="margin: 0 0 8px 0; color: #10b981; font-size: 14px;">Streaming Verification (curl -N)</h3>
+      <pre style="background: #0f172a; padding: 12px; border-radius: 8px; font-size: 12px; color: #34d399; overflow-x: auto;"><code>curl -N -X POST http://localhost:8000/ask/stream \
+  -H "Content-Type: application/json" \
+  -d '{"question": "ما هي القوة الملزمة للعقد وفقاً للمادة 147؟"}'
+
+event: token
+data: وفقاً
+
+event: token
+data:  للمادة
+
+event: token
+data:  147...
+
+event: citations
+data: [{"article_number": 147, "citation": "Egyptian Civil Code, Article 147", "is_grounded": true}]
+
+event: done
+data: {"trace_id": "sanad_stream_01", "latency_ms": 380}</code></pre>
+    </div>
+  </div>
+</body>
+</html>

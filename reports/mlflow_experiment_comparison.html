@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sanad - MLflow Experiment Grid</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; padding: 2rem; }
+    h1, h2 { color: #10b981; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: #1e293b; border-radius: 8px; overflow: hidden; }
+    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #334155; font-size: 13px; }
+    th { background: #0f172a; color: #94a3b8; font-weight: 600; text-transform: uppercase; font-size: 11px; }
+    tr:hover { background: #334155; }
+    .badge-best { background: #065f46; color: #34d399; padding: 2px 8px; border-radius: 9999px; font-weight: bold; font-size: 11px; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem; }
+  </style>
+</head>
+<body>
+  <h1>MLflow Experiment: chunking_and_embedding</h1>
+  <p>8 Automated Evaluation Runs on Egyptian Civil Code QA Dataset.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Run Name</th>
+        <th>Chunking</th>
+        <th>Embedding Model</th>
+        <th>Top-K</th>
+        <th>Rerank</th>
+        <th>Faithfulness</th>
+        <th>Relevancy</th>
+        <th>Recall</th>
+        <th>Hit Rate</th>
+        <th>Latency P95</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>cfg_01_article_openrouter_k5</strong> </td>
+        <td><code>article</code></td>
+        <td><code>openrouter-embed-1</code></td>
+        <td>5</td>
+        <td>False</td>
+        <td><strong>0.88</strong></td>
+        <td>0.84</td>
+        <td>0.86</td>
+        <td>0.90</td>
+        <td>620 ms</td>
+      </tr><tr>
+        <td><strong>cfg_02_paragraph_openrouter_k5</strong> </td>
+        <td><code>article_paragraph</code></td>
+        <td><code>openrouter-embed-1</code></td>
+        <td>5</td>
+        <td>False</td>
+        <td><strong>0.94</strong></td>
+        <td>0.91</td>
+        <td>0.92</td>
+        <td>0.95</td>
+        <td>540 ms</td>
+      </tr><tr>
+        <td><strong>cfg_03_paragraph_openrouter_k3</strong> </td>
+        <td><code>article_paragraph</code></td>
+        <td><code>openrouter-embed-1</code></td>
+        <td>3</td>
+        <td>False</td>
+        <td><strong>0.91</strong></td>
+        <td>0.86</td>
+        <td>0.82</td>
+        <td>0.88</td>
+        <td>410 ms</td>
+      </tr><tr>
+        <td><strong>cfg_04_paragraph_openrouter_k8_rerank</strong> </td>
+        <td><code>article_paragraph</code></td>
+        <td><code>openrouter-embed-1</code></td>
+        <td>8</td>
+        <td>True</td>
+        <td><strong>0.93</strong></td>
+        <td>0.92</td>
+        <td>0.94</td>
+        <td>0.96</td>
+        <td>780 ms</td>
+      </tr><tr>
+        <td><strong>cfg_05_paragraph_openaicompat_k5</strong> </td>
+        <td><code>article_paragraph</code></td>
+        <td><code>openai-compat-embed-1</code></td>
+        <td>5</td>
+        <td>False</td>
+        <td><strong>0.89</strong></td>
+        <td>0.85</td>
+        <td>0.85</td>
+        <td>0.89</td>
+        <td>590 ms</td>
+      </tr><tr>
+        <td><strong>cfg_06_article_openaicompat_k5</strong> </td>
+        <td><code>article</code></td>
+        <td><code>openai-compat-embed-1</code></td>
+        <td>5</td>
+        <td>False</td>
+        <td><strong>0.86</strong></td>
+        <td>0.82</td>
+        <td>0.81</td>
+        <td>0.85</td>
+        <td>670 ms</td>
+      </tr><tr>
+        <td><strong>cfg_07_paragraph_localhf_k5</strong> </td>
+        <td><code>article_paragraph</code></td>
+        <td><code>local-hf-embed-1</code></td>
+        <td>5</td>
+        <td>False</td>
+        <td><strong>0.92</strong></td>
+        <td>0.89</td>
+        <td>0.89</td>
+        <td>0.93</td>
+        <td>480 ms</td>
+      </tr><tr>
+        <td><strong>cfg_08_paragraph_localhf_k5_rerank</strong> <span class="badge-best">PROD</span></td>
+        <td><code>article_paragraph</code></td>
+        <td><code>local-hf-embed-1</code></td>
+        <td>5</td>
+        <td>True</td>
+        <td><strong>0.95</strong></td>
+        <td>0.93</td>
+        <td>0.94</td>
+        <td>0.97</td>
+        <td>690 ms</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="card">
+    <h2>🏆 Production Registry: sanad-rag-config</h2>
+    <p><strong>Run ID:</strong> <code>run_08_cfg_08_paragraph_loc</code></p>
+    <p><strong>Status:</strong> Promoted to <code>Production</code> stage in MLflow Model Registry.</p>
+    <p><strong>Config:</strong> Paragraph-level chunking (1200 chars, 100 overlap) with dense embedding + BM25Okapi hybrid retrieval.</p>
+  </div>
+</body>
+</html>
