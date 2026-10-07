@@ -62,6 +62,11 @@
 - **Decision**: Implemented modular FastAPI application under `backend/src/sanad/api/` with dependency injection (`deps.py`), standardized error schemas (`errors.py`), Server-Sent Events (`/ask/stream`), and Prometheus metrics (`/metrics`). Packaged the service into a containerizable BentoML service (`bento_service.py`) and `bentofile.yaml`.
 - **Consequences**: Independent serving stack, full SSE compliance with modern frontend clients, and multi-cloud container readiness.
 
-
-
-
+## DECISION-012: Frontend Architecture & Bilingual RTL React Application
+- **Context**: The user interface must support native right-to-left (RTL) Arabic typography, dark/light themes, real-time SSE token streaming, citation badges linked to source articles, direct browsing of 1..1149 statutory articles, and runtime selection of configured LLM and embedding models.
+- **Decision**: Built a React 18 + Vite + Tailwind CSS single-page application in `frontend/`:
+  1. Complete isolation: Zero shared code with backend, communicates via HTTP REST and SSE with configurable base URL (`VITE_API_BASE_URL`).
+  2. Bilingual & RTL: Dynamically toggles HTML `dir="rtl"` / `dir="ltr"` and `lang` with Cairo/Amiri Arabic typography.
+  3. Interactive Citations: Response streams render `[المادة N]` badges as clickable pills triggering full-article modals or jumping to the Code Browser tab.
+  4. Multi-Stage Container: Dockerized using `node:20-alpine` build stage and `nginx:alpine` runtime with SPA routing and optional `/api/` reverse proxy.
+- **Consequences**: Fast, responsive, production-ready frontend interface adhering strictly to MLOps and architectural isolation rules.
