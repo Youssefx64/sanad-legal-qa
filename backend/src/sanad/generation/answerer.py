@@ -193,17 +193,20 @@ class LegalAnswerer:
                 "Streaming from provider failed (%s); streaming deterministic synthesis from retrieved articles.",
                 e,
             )
-            primary_chunk = retrieved_chunks[0].chunk
-            if is_ar:
-                fallback_text = (
-                    f"وفقاً لأحكام [المادة {primary_chunk.article_number}] من القانون المدني المصري: "
-                    f"{primary_chunk.text_ar}"
-                )
+            primary_chunk = retrieved_chunks[0].chunk if retrieved_chunks else None
+            if primary_chunk:
+                if is_ar:
+                    fallback_text = (
+                        f"وفقاً لأحكام [المادة {primary_chunk.article_number}] من القانون المدني المصري: "
+                        f"{primary_chunk.text_ar}"
+                    )
+                else:
+                    fallback_text = (
+                        f"According to [Article {primary_chunk.article_number}] of the Egyptian Civil Code: "
+                        f"{primary_chunk.text_en}"
+                    )
             else:
-                fallback_text = (
-                    f"According to [Article {primary_chunk.article_number}] of the Egyptian Civil Code: "
-                    f"{primary_chunk.text_en}"
-                )
+                fallback_text = self.refusal_message_ar if is_ar else self.refusal_message_en
 
             words = fallback_text.split(" ")
             for i, w in enumerate(words):

@@ -85,54 +85,70 @@ export async function streamQuestion(
     const decoder = new TextDecoder("utf-8");
     let buffer = "";
 
+    const processBlock = (block: string) => {
+      if (!block.trim()) return;
+
+      let eventType = "message";
+      const dataLines: string[] = [];
+
+      const subLines = block.split(/\r?\n/);
+      for (const line of subLines) {
+        if (line.startsWith("event:")) {
+          eventType = line.slice(6).trim();
+        } else if (line.startsWith("data:")) {
+          const rawData = line.slice(5);
+          dataLines.push(rawData.startsWith(" ") ? rawData.slice(1) : rawData);
+        }
+      }
+
+      const dataStr = dataLines.join("\n");
+
+      if (eventType === "token") {
+        callbacks.onToken(dataStr);
+      } else if (eventType === "citations") {
+        try {
+          const parsed = JSON.parse(dataStr);
+          callbacks.onCitations(parsed);
+        } catch {
+          // Ignore parse errors on malformed citations chunk
+        }
+      } else if (eventType === "done") {
+        try {
+          const parsed = JSON.parse(dataStr);
+          callbacks.onDone(parsed);
+        } catch {
+          callbacks.onDone({});
+        }
+      } else if (eventType === "error") {
+        try {
+          const parsed = JSON.parse(dataStr);
+          callbacks.onError(new Error(parsed.detail || "Server stream error"));
+        } catch {
+          callbacks.onError(new Error(dataStr || "Stream error"));
+        }
+      }
+    };
+
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
 
       buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n\n");
+      const blocks = buffer.split(/\r?\n\r?\n/);
       // Keep last incomplete chunk in buffer
-      buffer = lines.pop() || "";
+      buffer = blocks.pop() || "";
 
-      for (const block of lines) {
-        if (!block.trim()) continue;
+      for (const block of blocks) {
+        processBlock(block);
+      }
+    }
 
-        let eventType = "message";
-        let dataStr = "";
-
-        const subLines = block.split("\n");
-        for (const line of subLines) {
-          if (line.startsWith("event:")) {
-            eventType = line.replace("event:", "").trim();
-          } else if (line.startsWith("data:")) {
-            dataStr = line.replace("data:", "").trim();
-          }
-        }
-
-        if (eventType === "token") {
-          callbacks.onToken(dataStr);
-        } else if (eventType === "citations") {
-          try {
-            const parsed = JSON.parse(dataStr);
-            callbacks.onCitations(parsed);
-          } catch {
-            // Ignore parse errors on malformed citations chunk
-          }
-        } else if (eventType === "done") {
-          try {
-            const parsed = JSON.parse(dataStr);
-            callbacks.onDone(parsed);
-          } catch {
-            callbacks.onDone({});
-          }
-        } else if (eventType === "error") {
-          try {
-            const parsed = JSON.parse(dataStr);
-            callbacks.onError(new Error(parsed.detail || "Server stream error"));
-          } catch {
-            callbacks.onError(new Error(dataStr || "Stream error"));
-          }
-        }
+    // Flush any remaining complete blocks in buffer
+    buffer += decoder.decode();
+    if (buffer.trim()) {
+      const blocks = buffer.split(/\r?\n\r?\n/);
+      for (const block of blocks) {
+        processBlock(block);
       }
     }
   } catch (err) {

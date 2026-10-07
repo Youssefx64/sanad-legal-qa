@@ -319,7 +319,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         );
       })}
 
-      {isLoading && (
+      {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
         <div className="flex items-center gap-3 text-xs py-2.5 px-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-slate-600 dark:text-slate-300 rounded-2xl border border-emerald-200/60 dark:border-emerald-800/50 shadow-sm w-fit animate-pulse">
           <div className="flex gap-1.5 items-center">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" />

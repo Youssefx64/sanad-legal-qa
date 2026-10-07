@@ -25,7 +25,15 @@ def _is_unrecoverable_quota_error(e: Exception) -> bool:
     if isinstance(e, httpx.HTTPStatusError):
         resp = e.response
         if resp is not None:
-            text = resp.text.lower()
+            if resp.status_code == 429:
+                return True
+            try:
+                text = resp.text.lower()
+            except Exception:
+                try:
+                    text = resp.read().decode("utf-8", errors="ignore").lower()
+                except Exception:
+                    text = ""
             if any(
                 term in text
                 for term in ("free-models-per-day", "quota", "credit", "insufficient", "exceeded")
