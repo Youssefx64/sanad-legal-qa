@@ -44,4 +44,18 @@
 - **Decision**: Vector collections in Qdrant are dynamically named `sanad_{model_id}_{dim}_{corpus_hash}`. Retrieval uses Reciprocal Rank Fusion (RRF, k=60) combining dense semantic search (Qdrant) and sparse keyword search (BM25 over normalized Arabic). In addition, explicit article mentions in queries (e.g. "المادة 147") are intercepted to deterministically inject exact article text as rank 1 with score 1.0.
 - **Consequences**: Zero vector space contamination across models, robust keyword+dense fusion, and deterministic precision for legal references.
 
+## DECISION-009: Strict Grounding & Citation Validation Guardrails
+- **Context**: Hallucination is strictly prohibited in legal advisory. The model must not invent statutes, quote phantom articles, or synthesize claims without retrieved evidence.
+- **Decision**: Implemented two-tiered post-generation verification in `guardrails/grounding.py`:
+  1. Citation Grounding: Parses cited article numbers (e.g. `[المادة 147]`). Any citation pointing to an article outside the retrieved context immediately flags the answer as hallucinated.
+  2. Fallback Refusal: If grounding check fails, the ungrounded output is automatically suppressed and replaced with the canonical refusal: "لم أجد أساساً في القانون المدني للإجابة عن هذا السؤال." (or English twin).
+  3. Immediate Refusal: If retrieval returns 0 articles, generation is bypassed entirely, directly returning the refusal.
+- **Consequences**: Provable citation integrity and zero ungrounded legal advice reaching the end user.
+
+## DECISION-010: Egyptian PII Scrubbing Pre-Processor
+- **Context**: Legal questions frequently mention real clients, national IDs, contact numbers, and bank accounts that should not be transmitted to external LLM providers.
+- **Decision**: Implemented `guardrails/pii.py` regex scrubber detecting Egyptian 14-digit National IDs (`[23]\d{13}`), local telephone numbers (`01[0125]\d{8}`), emails, and IBANs (`EG\d{2}[A-Za-z0-9]{25}`) before prompt formation.
+- **Consequences**: Client confidentiality protected upstream while preserving query semantics.
+
+
 
