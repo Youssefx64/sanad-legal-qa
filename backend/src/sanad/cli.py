@@ -138,9 +138,38 @@ def ingest(
         str | None,
         typer.Option("--embedding-model", "-m", help="Embedding model ID to index with"),
     ] = None,
+    articles_path: Annotated[
+        Path,
+        typer.Option("--articles-path", "-a", help="Path to articles.json to index"),
+    ] = Path("data/processed/articles.json"),
+    force: Annotated[
+        bool,
+        typer.Option("--force", "-f", help="Force re-indexing even if collection exists"),
+    ] = False,
 ) -> None:
-    """Index articles into Qdrant vector database (implemented in Phase 3)."""
-    typer.secho("Ingest command will be executed in Phase 3.", fg=typer.colors.YELLOW)
+    """Index articles into Qdrant vector database."""
+    import asyncio
+
+    from sanad.indexing.ingest import run_ingestion
+
+    typer.secho(
+        f"Starting ingestion for model '{embedding_model or 'default'}'...", fg=typer.colors.CYAN
+    )
+    try:
+        res = asyncio.run(
+            run_ingestion(
+                articles_path=articles_path,
+                embedding_model_id=embedding_model,
+                force=force,
+            )
+        )
+        typer.secho(f"Ingestion {res['status']}:", fg=typer.colors.GREEN, bold=True)
+        typer.secho(f"  - Collection: {res['collection_name']}")
+        typer.secho(f"  - Model: {res['model_id']} (dim={res['dimension']})")
+        typer.secho(f"  - Chunks: {res['chunks_count']}")
+    except Exception as e:
+        typer.secho(f"Ingestion failed: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=1) from e
 
 
 @app.command()

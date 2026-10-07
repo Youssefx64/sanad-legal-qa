@@ -69,6 +69,19 @@ disallow_incomplete_defs = true
 check_untyped_defs = true
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = [
+    "rank_bm25.*",
+    "sentence_transformers.*",
+    "pymupdf.*",
+    "fitz.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "sanad.corpus.pdf_extract"
+disallow_untyped_calls = false
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]

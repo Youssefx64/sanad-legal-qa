@@ -55,9 +55,11 @@ embedding_models:
   - id: local-hf-embed-1
     label: "Local sentence-transformers (placeholder)"
     provider: local_hf
-    model: "REPLACE_ME/hf-model-name"
+    model: "BAAI/bge-m3"
     device: auto
-    enabled: false
+    dimension: 1024
+    batch_size: 32
+    enabled: true
 
 providers:
   openrouter:
@@ -68,3 +70,5 @@ providers:
     api_key_env: OPENAI_COMPAT_API_KEY
   ollama:
     base_url: "http://localhost:11434"
+  local_hf:
+    base_url: "local"

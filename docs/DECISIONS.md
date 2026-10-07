@@ -34,3 +34,14 @@
   5. The Issuance Law (قانون الإصدار, Articles 1–2) is extracted into `data/processed/issuance_law.json` to keep Code articles strictly contiguous from 1 to 1149.
 - **Consequences**: Exact 1..1149 contiguous coverage with 0 gaps, 0 duplicates, and 100% non-empty Arabic and English bodies.
 
+## DECISION-007: Provider Abstraction & Unified Async Streaming Protocol
+- **Context**: The system must support any combination of OpenRouter, standard OpenAI-compatible endpoints (vLLM, TGI, local proxies), Ollama, and local HuggingFace models without code modification, capturing token usage and supporting SSE streaming.
+- **Decision**: Implemented `ChatProvider` with async `complete()` and `stream()`, and `EmbeddingProvider` with auto-detected dimensionality. Implemented exponential backoff for transient 429/5xx status codes, and unified `ProviderFactory` with thread-safe singleton lifecycle and cache.
+- **Consequences**: Adding models is purely configuration-driven in `models.yaml`. Offline mode works gracefully with local/mock fallback.
+
+## DECISION-008: Qdrant Dynamic Partitioning & RRF Hybrid Retrieval
+- **Context**: Different embedding models produce vectors in different dimensionality spaces. Retrieval over legal statutes must guarantee high recall on semantic concepts while deterministically finding exact articles when users cite them.
+- **Decision**: Vector collections in Qdrant are dynamically named `sanad_{model_id}_{dim}_{corpus_hash}`. Retrieval uses Reciprocal Rank Fusion (RRF, k=60) combining dense semantic search (Qdrant) and sparse keyword search (BM25 over normalized Arabic). In addition, explicit article mentions in queries (e.g. "المادة 147") are intercepted to deterministically inject exact article text as rank 1 with score 1.0.
+- **Consequences**: Zero vector space contamination across models, robust keyword+dense fusion, and deterministic precision for legal references.
+
+

@@ -200,3 +200,25 @@ def load_model_registry(path: str | Path) -> ModelRegistry:
         data = yaml.safe_load(f)
 
     return ModelRegistry(**data)
+
+
+_cached_registry: ModelRegistry | None = None
+
+
+def get_model_registry(path: str | Path | None = None) -> ModelRegistry:
+    """Get the cached ModelRegistry or load it from the configured models_config_path."""
+    global _cached_registry
+    if _cached_registry is None or path is not None:
+        if path is not None:
+            return load_model_registry(path)
+        from sanad.config.settings import get_settings
+
+        settings = get_settings()
+        _cached_registry = load_model_registry(settings.get_models_path())
+    return _cached_registry
+
+
+def reset_model_registry() -> None:
+    """Reset cached model registry (useful in tests)."""
+    global _cached_registry
+    _cached_registry = None
