@@ -1,4 +1,8 @@
-# Python
+# ==============================================================================
+# Sanad Legal Q&A — .gitignore
+# ==============================================================================
+
+# Python bytecode & packages
 __pycache__/
 *.py[cod]
 *$py.class
@@ -27,38 +31,75 @@ venv/
 ENV/
 .bin/
 
-# Testing & Linting
+# Testing, Coverage & Linters
 .pytest_cache/
+backend/.pytest_cache/
 .coverage
+.coverage.*
+backend/.coverage
+coverage/
+coverage.xml
 htmlcov/
 .mypy_cache/
+backend/.mypy_cache/
 .ruff_cache/
+backend/.ruff_cache/
 
-# Environment and secrets
+# Environment files & Secrets (Strictly ignored)
 .env
-.env.local
+.env.*
+!.env.example
 *.pem
 *.key
+*.cert
+*.crt
+secrets/
 
-# Node / Frontend
+# Databases & Local volumes
+*.db
+*.sqlite
+*.sqlite3
+qdrant_storage/
+postgres_data/
+clickhouse_data/
+grafana_data/
+
+# MLflow & BentoML
+mlruns/
+mlartifacts/
+bentos/
+.bentoml/
+
+# DVC local cache & temporary state
+.dvc/cache/
+.dvc/tmp/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Node & Frontend
 node_modules/
+frontend/node_modules/
 frontend/dist/
+dist/
 .eslintcache
+.vite/
+frontend/.vite/
 
-# IDEs
+# IDEs & Editors
 .idea/
 .vscode/
 *.swp
 *.swo
+*.sublime-project
+*.sublime-workspace
 
-# OS
+# OS Files
 .DS_Store
 Thumbs.db
-
-# Qdrant local storage
-qdrant_storage/
-
-# MLflow local artifacts
-mlruns/
-mlartifacts/
-
+Desktop.ini
