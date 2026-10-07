@@ -24,3 +24,13 @@
 - **Context**: Hallucination is strictly unacceptable in legal Q&A. System must answer only from retrieved articles.
 - **Decision**: Combine dense vector retrieval with BM25 keyword search using Reciprocal Rank Fusion (RRF). Detect explicit article mentions in queries (e.g. "المادة 147") for deterministic article lookup. Generative answers must pass citation grounding check; citations to unretrieved articles are rejected or flagged.
 - **Consequences**: High precision and verifiable source lineage.
+
+## DECISION-006: Position-Aware Bilingual Extraction & Reconciliation Nuances
+- **Context**: Egyptian Civil Code PDF page geometry (width ~595pt) uses a two-column format with English on the left and Arabic on the right, but character streams contain RTL reversals, Arabic-Indic numbers, and omissions:
+  1. The centerline boundary is consistently at `x = 298.0 pt`. Text lines with `x < 298` belong to the English column, and `x >= 298` belong to the Arabic column.
+  2. Sequential English markers (`Article N`) paired with Arabic markers (`مادة N`) anchor vertical line spans. False positive article mentions in running sentences are filtered by checking vertical alignment (`abs(y_en - y_ar) < 30 pt`) with Arabic markers.
+  3. Article 1022 Arabic marker is omitted in the PDF source between paragraphs 1 and 2 of Article 1021. The parser detects this and splits Article 1021 paragraphs `(2)` and `(3)` to populate Article 1022 cleanly.
+  4. Repealed articles: Articles 54–80 (Law 384/1956 & 32/1964) and Articles 389–417 (Evidence Law 25/1968) are preserved with full metadata, statutory repeal notes, and flagged with `is_repealed: true`.
+  5. The Issuance Law (قانون الإصدار, Articles 1–2) is extracted into `data/processed/issuance_law.json` to keep Code articles strictly contiguous from 1 to 1149.
+- **Consequences**: Exact 1..1149 contiguous coverage with 0 gaps, 0 duplicates, and 100% non-empty Arabic and English bodies.
+

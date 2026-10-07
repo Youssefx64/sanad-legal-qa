@@ -1,0 +1,23 @@
+{
+  "total_articles": 1149,
+  "active_articles": 1093,
+  "repealed_articles": 56,
+  "min_article_number": 1,
+  "max_article_number": 1149,
+  "issuance_law_articles": [
+    {
+      "article_number": 1,
+      "text_ar": "يلغي القانون المدني المعمول به أمام المحاكم الوطنية والصادر في 28 أكتوبر سنة 1883 والقانون المدني المعمول به أمام المحاكم المختلطة والصادر في 28 يونيو سنة 1875 ويستعاض عنهما بالقانون المدني المرافق لهذا القانون.",
+      "text_en": "The Civil Code in force before the national courts promulgated on October 28, 1883 and the Civil Code in force before the mixed courts promulgated on June 28, 1875 are repealed and replaced by the Civil Code annexed to the present law.",
+      "source_page": 1,
+      "citation": "Egyptian Civil Code, Issuance Law Article 1"
+    },
+    {
+      "article_number": 2,
+      "text_ar": "على وزير العدل تنفيذ هذا القانون ويعمل به ابتداء من 15 أكتوبر سنة 1949.",
+      "text_en": "The Minister of Justice is charged with the execution of this law, which shall come into force on October 15, 1949.",
+      "source_page": 1,
+      "citation": "Egyptian Civil Code, Issuance Law Article 2"
+    }
+  ]
+}

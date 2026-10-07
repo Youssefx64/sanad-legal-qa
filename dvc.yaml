@@ -1,0 +1,15 @@
+stages:
+  extract:
+    cmd: python -m sanad.cli extract --pdf-path data/raw/egyptian_civil_code_1948.pdf --output-dir data/processed --report-path reports/corpus_spotcheck.md
+    deps:
+      - data/raw/egyptian_civil_code_1948.pdf
+      - backend/src/sanad/corpus/
+    outs:
+      - data/processed/articles.json:
+          cache: true
+      - data/processed/issuance_law.json:
+          cache: true
+      - data/processed/corpus_metadata.json:
+          cache: true
+      - reports/corpus_spotcheck.md:
+          cache: false
