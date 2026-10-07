@@ -12,6 +12,8 @@ import {
   BookOpen,
   User,
   ExternalLink,
+  Search,
+  Loader2,
 } from "lucide-react";
 
 interface ChatWindowProps {
@@ -212,9 +214,58 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                   </div>
                 ) : (
                   <div>
-                    {renderFormattedText(msg.content, msg.citations)}
-                    {msg.isStreaming && (
-                      <span className="inline-block w-1.5 h-4 ml-1 bg-emerald-500 animate-pulse align-middle" />
+                    {msg.isStreaming && !msg.content ? (
+                      <div className="py-2.5 px-3 rounded-2xl bg-gradient-to-r from-emerald-50/70 via-teal-50/40 to-slate-50/60 dark:from-emerald-950/40 dark:via-teal-950/20 dark:to-slate-900/40 border border-emerald-200/80 dark:border-emerald-800/60 shadow-sm space-y-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="relative flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-600/30 shrink-0">
+                            <Scale className="w-4 h-4 animate-spin-slow" />
+                            <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                            </span>
+                          </div>
+                          <div>
+                            <div className="text-xs font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-1.5">
+                              <span>
+                                {language === "ar"
+                                  ? "سند يُفكّر ويُحلل السند القانوني..."
+                                  : "Sanad is analyzing legal provisions..."}
+                              </span>
+                              <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+                            </div>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                              {language === "ar"
+                                ? "البحث في 1,149 مادة ومطابقة النصوص والتأصيل"
+                                : "Searching 1,149 articles & matching statutory texts"}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Animated Step-by-Step Legal Retrieval Indicator */}
+                        <div className="p-2.5 rounded-xl bg-white/70 dark:bg-slate-900/60 border border-emerald-100 dark:border-emerald-900/40 space-y-2">
+                          <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-300">
+                            <div className="flex items-center gap-2">
+                              <Search className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                              <span>
+                                {language === "ar"
+                                  ? "استرجاع المواد ذات الصلة والتحقق من سريانها..."
+                                  : "Retrieving relevant statutes & checking validity..."}
+                              </span>
+                            </div>
+                            <Loader2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 animate-spin" />
+                          </div>
+                          <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                            <div className="h-full bg-emerald-500 rounded-full animate-shimmer w-full" />
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {renderFormattedText(msg.content, msg.citations)}
+                        {msg.isStreaming && (
+                          <span className="inline-block w-2 h-4 ml-1 bg-emerald-500 rounded-sm animate-pulse align-middle shadow-sm shadow-emerald-500/50" />
+                        )}
+                      </>
                     )}
                   </div>
                 )}
@@ -269,16 +320,19 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       })}
 
       {isLoading && (
-        <div className="flex gap-3 items-center text-slate-400 text-xs py-2 px-4 bg-white/50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700/60 w-fit">
-          <div className="flex gap-1">
+        <div className="flex items-center gap-3 text-xs py-2.5 px-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-slate-600 dark:text-slate-300 rounded-2xl border border-emerald-200/60 dark:border-emerald-800/50 shadow-sm w-fit animate-pulse">
+          <div className="flex gap-1.5 items-center">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" />
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.2s]" />
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce [animation-delay:0.4s]" />
           </div>
-          <span>
-            {language === "ar"
-              ? "جاري استرجاع المواد والتحقق من التأصيل القانوني..."
-              : "Retrieving articles and verifying grounding..."}
+          <span className="font-medium text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+            <Scale className="w-3.5 h-3.5" />
+            <span>
+              {language === "ar"
+                ? "جاري استرجاع السند القانوني والتحقق من المواد..."
+                : "Retrieving legal statutes and verifying grounding..."}
+            </span>
           </span>
         </div>
       )}

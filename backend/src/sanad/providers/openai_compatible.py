@@ -134,32 +134,54 @@ class OpenAICompatibleChatProvider(ChatProvider):
         payload.update(kwargs)
 
         url = f"{self.base_url}/chat/completions"
+        last_exception: Exception | None = None
 
-        async with (
-            httpx.AsyncClient(timeout=self.timeout) as client,
-            client.stream("POST", url, json=payload, headers=self._headers()) as response,
-        ):
-            response.raise_for_status()
-            async for line in response.aiter_lines():
-                line = line.strip()
-                if not line or not line.startswith("data:"):
-                    continue
-                data_str = line[len("data:") :].strip()
-                if data_str == "[DONE]":
-                    yield ChatStreamChunk(content="", is_final=True)
-                    break
+        for attempt in range(self.max_retries):
+            try:
+                async with (
+                    httpx.AsyncClient(timeout=self.timeout) as client,
+                    client.stream("POST", url, json=payload, headers=self._headers()) as response,
+                ):
+                    response.raise_for_status()
+                    async for line in response.aiter_lines():
+                        line = line.strip()
+                        if not line or not line.startswith("data:"):
+                            continue
+                        data_str = line[len("data:") :].strip()
+                        if data_str == "[DONE]":
+                            yield ChatStreamChunk(content="", is_final=True)
+                            break
 
-                try:
-                    chunk_json = json.loads(data_str)
-                    choices = chunk_json.get("choices", [])
-                    if not choices:
-                        continue
-                    delta = choices[0].get("delta", {})
-                    content_piece = delta.get("content", "")
-                    if content_piece:
-                        yield ChatStreamChunk(content=content_piece, is_final=False)
-                except json.JSONDecodeError:
-                    continue
+                        try:
+                            chunk_json = json.loads(data_str)
+                            choices = chunk_json.get("choices", [])
+                            if not choices:
+                                continue
+                            delta = choices[0].get("delta", {})
+                            content_piece = delta.get("content", "")
+                            if content_piece:
+                                yield ChatStreamChunk(content=content_piece, is_final=False)
+                        except json.JSONDecodeError:
+                            continue
+                    return
+            except (httpx.HTTPStatusError, httpx.RequestError) as e:
+                last_exception = e
+                status = getattr(getattr(e, "response", None), "status_code", 500)
+                if status in (429, 500, 502, 503, 504) and attempt < self.max_retries - 1:
+                    wait_time = 2**attempt
+                    logger.warning(
+                        "Chat stream request failed with %s (attempt %d/%d). Retrying in %ds...",
+                        e,
+                        attempt + 1,
+                        self.max_retries,
+                        wait_time,
+                    )
+                    await asyncio.sleep(wait_time)
+                else:
+                    raise
+
+        if last_exception:
+            raise last_exception
 
 
 class OpenAICompatibleEmbeddingProvider(EmbeddingProvider):

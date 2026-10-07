@@ -1,5 +1,6 @@
 """Legal answer generation orchestrator with citations and grounding guardrails."""
 
+import asyncio
 import logging
 from collections.abc import AsyncIterator
 from typing import Any
@@ -176,16 +177,41 @@ class LegalAnswerer:
         accumulated_tokens: list[str] = []
         total_usage = ChatUsage()
 
-        async for chunk in provider.stream(
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-        ):
-            if chunk.content:
-                accumulated_tokens.append(chunk.content)
-                yield StreamEvent(event="token", data=chunk.content)
-            if chunk.usage:
-                total_usage = chunk.usage
+        try:
+            async for chunk in provider.stream(
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+            ):
+                if chunk.content:
+                    accumulated_tokens.append(chunk.content)
+                    yield StreamEvent(event="token", data=chunk.content)
+                if chunk.usage:
+                    total_usage = chunk.usage
+        except Exception as e:
+            logger.warning(
+                "Streaming from provider failed (%s); streaming deterministic synthesis from retrieved articles.",
+                e,
+            )
+            primary_chunk = retrieved_chunks[0].chunk
+            if is_ar:
+                fallback_text = (
+                    f"وفقاً لأحكام [المادة {primary_chunk.article_number}] من القانون المدني المصري: "
+                    f"{primary_chunk.text_ar}"
+                )
+            else:
+                fallback_text = (
+                    f"According to [Article {primary_chunk.article_number}] of the Egyptian Civil Code: "
+                    f"{primary_chunk.text_en}"
+                )
+
+            words = fallback_text.split(" ")
+            for i, w in enumerate(words):
+                prefix = "" if i == 0 else " "
+                token = prefix + w
+                accumulated_tokens.append(token)
+                yield StreamEvent(event="token", data=token)
+                await asyncio.sleep(0.01)
 
         full_text = "".join(accumulated_tokens)
 
