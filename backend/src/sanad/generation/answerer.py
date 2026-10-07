@@ -41,6 +41,48 @@ class StreamEvent(BaseModel):
     data: str | list[dict[str, Any]] | dict[str, Any]
 
 
+def build_statutory_synthesis(
+    retrieved_chunks: list[SearchResult],
+    is_ar: bool,
+    refusal_message_ar: str,
+    refusal_message_en: str,
+) -> str:
+    """Build a grounded multi-article synthesis when remote LLM provider is unavailable."""
+    if not retrieved_chunks:
+        return refusal_message_ar if is_ar else refusal_message_en
+
+    seen_articles = set()
+    distinct_chunks = []
+    for sc in retrieved_chunks:
+        if sc.chunk.article_number not in seen_articles:
+            seen_articles.add(sc.chunk.article_number)
+            distinct_chunks.append(sc.chunk)
+
+    if not distinct_chunks:
+        return refusal_message_ar if is_ar else refusal_message_en
+
+    if is_ar:
+        if len(distinct_chunks) == 1:
+            c = distinct_chunks[0]
+            return (
+                f"وفقاً لأحكام [المادة {c.article_number}] من القانون المدني المصري:\n\n{c.text_ar}"
+            )
+
+        sections = ["وفقاً لأحكام القانون المدني المصري المسترجعة ذات الصلة:"]
+        for c in distinct_chunks[:4]:
+            sections.append(f"\n\n• **[المادة {c.article_number}]**:\n{c.text_ar}")
+        return "".join(sections)
+    else:
+        if len(distinct_chunks) == 1:
+            c = distinct_chunks[0]
+            return f"According to [Article {c.article_number}] of the Egyptian Civil Code:\n\n{c.text_en}"
+
+        sections = ["According to the relevant provisions of the Egyptian Civil Code:"]
+        for c in distinct_chunks[:4]:
+            sections.append(f"\n\n• **[Article {c.article_number}]**:\n{c.text_en}")
+        return "".join(sections)
+
+
 class LegalAnswerer:
     """Orchestrates LLM generation, citation linking, and grounding verification."""
 
@@ -106,11 +148,9 @@ class LegalAnswerer:
                 "Chat provider completion failed (%s); generating deterministic synthesis from retrieved articles.",
                 e,
             )
-            primary_chunk = retrieved_chunks[0].chunk
-            if is_ar:
-                raw_answer = f"وفقاً لأحكام [المادة {primary_chunk.article_number}] من القانون المدني المصري: {primary_chunk.text_ar}"
-            else:
-                raw_answer = f"According to [Article {primary_chunk.article_number}] of the Egyptian Civil Code: {primary_chunk.text_en}"
+            raw_answer = build_statutory_synthesis(
+                retrieved_chunks, is_ar, self.refusal_message_ar, self.refusal_message_en
+            )
             usage = ChatUsage(prompt_tokens=50, completion_tokens=30, total_tokens=80)
             model_name = "offline-grounded-fallback"
 
@@ -193,20 +233,9 @@ class LegalAnswerer:
                 "Streaming from provider failed (%s); streaming deterministic synthesis from retrieved articles.",
                 e,
             )
-            primary_chunk = retrieved_chunks[0].chunk if retrieved_chunks else None
-            if primary_chunk:
-                if is_ar:
-                    fallback_text = (
-                        f"وفقاً لأحكام [المادة {primary_chunk.article_number}] من القانون المدني المصري: "
-                        f"{primary_chunk.text_ar}"
-                    )
-                else:
-                    fallback_text = (
-                        f"According to [Article {primary_chunk.article_number}] of the Egyptian Civil Code: "
-                        f"{primary_chunk.text_en}"
-                    )
-            else:
-                fallback_text = self.refusal_message_ar if is_ar else self.refusal_message_en
+            fallback_text = build_statutory_synthesis(
+                retrieved_chunks, is_ar, self.refusal_message_ar, self.refusal_message_en
+            )
 
             words = fallback_text.split(" ")
             for i, w in enumerate(words):

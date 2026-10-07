@@ -15,13 +15,107 @@ from sanad.retrieval.reranker import NoOpReranker, Reranker, SearchResult
 logger = logging.getLogger(__name__)
 
 
+ARABIC_IR_STOPWORDS = {
+    "ما",
+    "هي",
+    "هو",
+    "في",
+    "من",
+    "على",
+    "عن",
+    "الى",
+    "إلى",
+    "مع",
+    "هذا",
+    "هذه",
+    "ذلك",
+    "تلك",
+    "التي",
+    "الذي",
+    "الذين",
+    "اللاتي",
+    "ان",
+    "أن",
+    "اذا",
+    "إذا",
+    "كان",
+    "كانت",
+    "يكون",
+    "تكون",
+    "او",
+    "أو",
+    "ثم",
+    "حيث",
+    "كل",
+    "غير",
+    "قد",
+    "لا",
+    "لم",
+    "لن",
+    "بين",
+    "فان",
+    "فإذا",
+    "حتى",
+    "كما",
+    "بعد",
+    "قبل",
+}
+
+LEGAL_CONCEPT_SYNONYMS = {
+    "الرضا": "التراضي الاراده ارادتين الاهليه اهليه عيوب الرضا الغلط التدليس الاكراه الاستغلال",
+    "رضا": "التراضي الاراده ارادتين الاهليه اهليه عيوب الرضا الغلط التدليس الاكراه الاستغلال",
+    "التراضي": "الرضا الاراده ارادتين الاهليه عيوب الرضا الغلط التدليس الاكراه",
+    "المسؤولية": "العمل غير المشروع التعويض الضرر الخطا علاقه السببيه",
+    "التعويض": "الضرر الخطا المسؤوليه التقصيريه العمل غير المشروع",
+    "الفسخ": "انحلال العقد عدم التنفيذ الاعذار",
+    "البطلان": "ابطال العقد قابل للابطال المحل السبب الاهليه",
+    "التقادم": "التقادم المسقط انقطاع التقادم وقف التقادم مده التقادم",
+    "القوة القاهرة": "الحادث الفجائي استحاله التنفيذ الظروف الطارئه",
+}
+
+
+def _light_stem_ar(word: str) -> str:
+    w = normalize_arabic(word, norm_teh_marbuta=True)
+    if len(w) > 4 and w.startswith("ال"):
+        w = w[2:]
+    if len(w) > 4 and (w.startswith("و") or w.startswith("ف")):
+        w = w[1:]
+    if len(w) > 4 and (w.startswith("ب") or w.startswith("ل") or w.startswith("ك")):
+        w = w[1:]
+    if len(w) > 4 and w.startswith("ال"):
+        w = w[2:]
+    return w
+
+
+def tokenize_for_bm25(text: str) -> list[str]:
+    import re
+
+    words = re.findall(r"[\u0600-\u06FF\w]+", text)
+    tokens: list[str] = []
+    for w in words:
+        norm = normalize_arabic(w, norm_teh_marbuta=True)
+        if norm not in ARABIC_IR_STOPWORDS and len(norm) > 1:
+            tokens.append(_light_stem_ar(norm))
+    return tokens
+
+
+def expand_legal_query(query: str) -> str:
+    expanded = [query]
+    q_norm = normalize_arabic(query, norm_teh_marbuta=True)
+    for term, syns in LEGAL_CONCEPT_SYNONYMS.items():
+        term_norm = normalize_arabic(term, norm_teh_marbuta=True)
+        if term_norm in q_norm:
+            expanded.append(syns)
+    return " ".join(expanded)
+
+
 class BM25Index:
-    """In-memory BM25 index over normalized Arabic chunk texts."""
+    """In-memory BM25 index over normalized Arabic chunk texts with light stemming."""
 
     def __init__(self, chunks: list[ChunkRecord]) -> None:
         self.chunks = chunks
         self.tokenized_corpus = [
-            normalize_arabic(c.text_ar_normalized or c.text_ar).split() for c in chunks
+            tokenize_for_bm25(c.text_ar_normalized or c.text_ar) for c in chunks
         ]
         self.bm25 = BM25Okapi(self.tokenized_corpus) if self.tokenized_corpus else None
         # Quick lookup map by article number
@@ -38,16 +132,19 @@ class BM25Index:
         if not self.bm25 or not self.chunks:
             return []
 
-        tokens = normalize_arabic(query).split()
+        exp_query = expand_legal_query(query)
+        tokens = tokenize_for_bm25(exp_query)
         if not tokens:
             return []
 
         scores = self.bm25.get_scores(tokens)
         scored_pairs = list(zip(self.chunks, scores, strict=True))
 
-        # Filter criteria
+        # Filter criteria and strictly exclude non-matching (score <= 0.0) chunks
         filtered: list[tuple[ChunkRecord, float]] = []
         for chunk, score in scored_pairs:
+            if score <= 0.0:
+                continue
             if filter_criteria:
                 if filter_criteria.exclude_repealed and chunk.is_repealed:
                     continue
@@ -61,6 +158,9 @@ class BM25Index:
                 ):
                     continue
             filtered.append((chunk, float(score)))
+
+        if not filtered:
+            return []
 
         # Sort descending by BM25 score
         filtered.sort(key=lambda x: x[1], reverse=True)

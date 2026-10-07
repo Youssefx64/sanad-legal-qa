@@ -1,5 +1,6 @@
 """Sanad RAG facade unifying retrieval, generation, citations, and guardrails."""
 
+import asyncio
 import json
 import logging
 import time
@@ -46,6 +47,76 @@ class QueryResponse(BaseModel):
     embedding_model_id: str
     trace_id: str
     pii_redacted: bool = False
+
+
+def check_conversational_intent(query: str) -> tuple[bool, str]:
+    """Check if query is a greeting, pleasantry, or meta-question rather than a statutory search."""
+    q = query.strip()
+    if not q:
+        return False, ""
+
+    from sanad.corpus.arabic_text import normalize_arabic
+
+    q_norm = normalize_arabic(q, norm_teh_marbuta=True).lower()
+
+    greetings = [
+        "ازيك",
+        "عامل ايه",
+        "صباح الخير",
+        "مساء الخير",
+        "مرحبا",
+        "أهلا",
+        "اهلا",
+        "السلام عليكم",
+        "سلام",
+        "سلام عليكم",
+        "هاي",
+        "hello",
+        "hi",
+        "hey",
+    ]
+    if any(q_norm == g or q_norm.startswith(g + " ") for g in greetings):
+        return True, (
+            "أهلاً بك! أنا **سند (Sanad)**، مساعدك القانوني الذكي المتخصص في نصوص وأحكام **القانون المدني المصري (قانون رقم 131 لسنة 1948)**.\n\n"
+            "يمكنك توجيه أي سؤال قانوني، مثل:\n"
+            "- *ما هي أحكام المادة 147 من القانون المدني؟*\n"
+            "- *ما هي شروط صحة الرضا في العقد؟*\n"
+            "- *ما هو حكم المسؤولية عن العمل غير المشروع والتعويض؟*\n\n"
+            "كيف يمكنني مساعدتك قانونياً اليوم؟"
+        )
+
+    thanks = [
+        "شكرا",
+        "شكرًا",
+        "تسلم",
+        "جزاك الله",
+        "مشكور",
+        "شكرا جزيلا",
+        "thanks",
+        "thank you",
+    ]
+    if any(q_norm == t or q_norm.startswith(t + " ") for t in thanks):
+        return True, (
+            "على الرحب والسعة! يسعدني دائماً مساعدتك في استيضاح وتأصيل نصوص القانون المدني المصري. "
+            "هل لديك أي استفسار قانوني آخر؟"
+        )
+
+    identity = [
+        "مين انت",
+        "من انت",
+        "من أنت",
+        "ما هو سند",
+        "ما هو سنَد",
+        "عن النظام",
+        "who are you",
+    ]
+    if any(q_norm == i or q_norm.startswith(i + " ") for i in identity):
+        return True, (
+            "أنا **سند (Sanad)**، منصة ذكاء اصطناعي قانونية متخصصة ومبنية على **القانون المدني المصري (قانون رقم 131 لسنة 1948)**.\n"
+            "أعتمد على الاسترجاع الدقيق لنصوص المواد (RAG) وتوثيق الإسناد القانوني المباشر لحظر أي ادعاءات أو اجتهادات غير منصوص عليها قانوناً."
+        )
+
+    return False, ""
 
 
 class SanadRAG:
@@ -137,6 +208,26 @@ class SanadRAG:
             scrubbed_query, redactions = redact_pii(question)
             pii_was_redacted = len(redactions) > 0
 
+        # Conversational intent check (greetings, pleasantries, identity)
+        is_conv, conv_resp = check_conversational_intent(scrubbed_query)
+        if is_conv:
+            return QueryResponse(
+                answer=conv_resp,
+                citations=[],
+                retrieved_articles=[],
+                grounding=GroundingCheckResult(
+                    is_grounded=True,
+                    confidence_score=1.0,
+                    reason="Conversational intent",
+                ),
+                usage=ChatUsage(),
+                latency_ms=round((time.perf_counter() - start_time) * 1000.0, 2),
+                chat_model_id=c_model_id,
+                embedding_model_id=e_model_id,
+                trace_id=trace_id,
+                pii_redacted=pii_was_redacted,
+            )
+
         # 2. Retrieval
         retriever = self._get_retriever(e_model_id)
         retrieved_chunks = await retriever.retrieve(
@@ -188,6 +279,26 @@ class SanadRAG:
         scrubbed_query = question
         if enable_pii_masking:
             scrubbed_query, _ = redact_pii(question)
+
+        # Conversational intent check (greetings, pleasantries, identity)
+        is_conv, conv_resp = check_conversational_intent(scrubbed_query)
+        if is_conv:
+            words = conv_resp.split(" ")
+            for i, w in enumerate(words):
+                prefix = "" if i == 0 else " "
+                yield StreamEvent(event="token", data=prefix + w)
+                await asyncio.sleep(0.01)
+            yield StreamEvent(event="citations", data=[])
+            yield StreamEvent(
+                event="done",
+                data={
+                    "is_grounded": True,
+                    "confidence_score": 1.0,
+                    "reason": "Conversational intent",
+                    "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+                },
+            )
+            return
 
         retriever = self._get_retriever(e_model_id)
         retrieved_chunks = await retriever.retrieve(
