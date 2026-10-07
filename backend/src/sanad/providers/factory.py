@@ -46,8 +46,6 @@ class ProviderFactory:
 
     def _resolve_base_url(self, base_url: str | None, base_url_env: str | None) -> str:
         """Resolve base URL from config or environment variable."""
-        if base_url:
-            return base_url
         if base_url_env:
             val = os.environ.get(base_url_env, "")
             if val:
@@ -56,6 +54,8 @@ class ProviderFactory:
                 val = getattr(self.settings, base_url_env.lower()) or ""
                 if val:
                     return val
+        if base_url:
+            return base_url
         return ""
 
     def get_chat_provider(self, model_id: str | None = None) -> ChatProvider:

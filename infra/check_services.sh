@@ -53,3 +53,4 @@ else
     printf "${COLOR_YELLOW}%d service(s) did not respond. (Ensure 'docker compose up -d' is running)${COLOR_RESET}\n" "$FAILED"
     exit 0
 fi
+

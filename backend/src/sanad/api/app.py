@@ -7,7 +7,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import APIRouter, FastAPI, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -95,12 +95,20 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.add_exception_handler(RequestValidationError, validation_exception_handler)  # type: ignore[arg-type]
     app.add_exception_handler(Exception, generic_exception_handler)
 
-    # 3. Router Registration
+    # 3. Router Registration (Root & /api/v1)
     app.include_router(health_router)
     app.include_router(ask_router)
     app.include_router(models_router)
     app.include_router(corpus_router)
     app.include_router(admin_router)
+
+    v1_router = APIRouter(prefix="/api/v1")
+    v1_router.include_router(health_router)
+    v1_router.include_router(ask_router)
+    v1_router.include_router(models_router)
+    v1_router.include_router(corpus_router)
+    v1_router.include_router(admin_router)
+    app.include_router(v1_router)
 
     # 4. Metrics Endpoint
     @app.get("/metrics", tags=["Observability"])

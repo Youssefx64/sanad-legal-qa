@@ -178,3 +178,4 @@ Immediately abort and revert traffic to stable if:
 - HTTP 5xx error rate exceeds 0.5% over a 5-minute rolling window.
 - P95 latency exceeds 2,000 ms.
 - RAGAS faithfulness gate drops below 0.75.
+

@@ -10,3 +10,4 @@ scrape_configs:
         labels:
           service: "sanad-legal-qa"
           env: "production"
+

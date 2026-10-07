@@ -11,3 +11,4 @@ repos:
       - id: mypy
         additional_dependencies: [pydantic>=2.6.0, pydantic-settings>=2.2.0, types-PyYAML]
         args: [--config-file=backend/pyproject.toml]
+

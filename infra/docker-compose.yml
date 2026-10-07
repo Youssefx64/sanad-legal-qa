@@ -40,6 +40,12 @@ services:
     restart: unless-stopped
     ports:
       - "8000:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ../config:/app/config:ro
+      - ../data:/app/data
+      - ../reports:/app/reports
     environment:
       - HOST=0.0.0.0
       - PORT=8000
@@ -49,7 +55,9 @@ services:
       - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY:-pk-lf-local}
       - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY:-sk-lf-local}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
-      - ADMIN_SECRET_KEY=${ADMIN_SECRET_KEY:-supersecretadminkey}
+      - ADMIN_API_KEY=${ADMIN_API_KEY:-sanad-admin-secret-key-change-me}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173,http://localhost:3000}
     depends_on:
       qdrant:
         condition: service_healthy
@@ -73,7 +81,6 @@ services:
     container_name: sanad-frontend
     restart: unless-stopped
     ports:
-      - "80:80"
       - "3000:80"
     depends_on:
       backend:

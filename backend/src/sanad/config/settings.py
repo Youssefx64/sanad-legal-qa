@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     openrouter_api_key: str | None = Field(default=None, alias="OPENROUTER_API_KEY")
     openai_compat_base_url: str | None = Field(default=None, alias="OPENAI_COMPAT_BASE_URL")
     openai_compat_api_key: str | None = Field(default=None, alias="OPENAI_COMPAT_API_KEY")
+    ollama_base_url: str = Field(default="http://localhost:11434", alias="OLLAMA_BASE_URL")
 
     # Security
     admin_api_key: str = Field(default="sanad-admin-secret-key", alias="ADMIN_API_KEY")

@@ -117,3 +117,4 @@ export interface ChatMessageItem {
   isStreaming?: boolean;
   timestamp: string;
 }
+

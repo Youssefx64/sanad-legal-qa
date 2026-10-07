@@ -19,7 +19,7 @@ COPY data /app/data
 
 RUN pip install --no-cache-dir -e "/app/backend[dev]"
 
-WORKDIR /app/backend
+WORKDIR /app
 
 EXPOSE 8000
 

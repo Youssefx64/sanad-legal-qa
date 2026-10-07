@@ -158,3 +158,4 @@ jobs:
       - name: Build Frontend Docker Image
         run: |
           docker build -t sanad-frontend:latest -f frontend/Dockerfile ./frontend
+

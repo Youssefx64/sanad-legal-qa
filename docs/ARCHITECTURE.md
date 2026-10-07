@@ -125,3 +125,4 @@ All models are declared declaratively in `config/models.yaml`:
 - **Langfuse Distributed Tracing**: Granular spans (`normalize`, `retrieve`, `generate`, `guardrails`) with token attribution.
 - **Prometheus & Grafana**: Exporting operational metrics, request latency histograms, LLM dollar cost estimates, and pre-built Grafana dashboards.
 - **Embedding Drift Detection**: KS-test and cosine distance monitoring detecting shifts between query traffic and the statutory corpus centroid.
+

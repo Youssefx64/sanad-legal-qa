@@ -52,10 +52,10 @@ class ProviderConfig(BaseModel):
 
     def resolve_base_url(self) -> str | None:
         """Resolve base URL from static config or environment variable."""
+        if self.base_url_env and os.getenv(self.base_url_env):
+            return os.getenv(self.base_url_env)
         if self.base_url:
             return self.base_url
-        if self.base_url_env:
-            return os.getenv(self.base_url_env)
         return None
 
     def resolve_api_key(self) -> str | None:
@@ -222,3 +222,4 @@ def reset_model_registry() -> None:
     """Reset cached model registry (useful in tests)."""
     global _cached_registry
     _cached_registry = None
+

@@ -105,3 +105,4 @@ class AdminIngestResponse(BaseModel):
     model_id: str
     dimension: int | None = None
     articles_count: int | None = None
+

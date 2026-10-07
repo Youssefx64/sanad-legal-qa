@@ -37,19 +37,17 @@ def test_load_real_models_yaml() -> None:
     assert config_path.exists(), f"models.yaml must exist at {config_path}"
 
     registry = load_model_registry(config_path)
-    assert registry.defaults.chat_model == "openrouter-chat-1"
-    assert registry.defaults.embedding_model == "openrouter-embed-1"
+    assert registry.defaults.chat_model in [m.id for m in registry.chat_models]
+    assert registry.defaults.embedding_model in [m.id for m in registry.embedding_models]
     assert len(registry.enabled_chat_models) >= 2
     assert len(registry.enabled_embedding_models) >= 2
 
-    # Lookup by ID
-    chat = registry.get_chat_model("openrouter-chat-1")
-    assert chat.id == "openrouter-chat-1"
-    assert chat.provider == "openrouter"
-
     # Default lookup
     default_chat = registry.get_chat_model()
-    assert default_chat.id == "openrouter-chat-1"
+    assert default_chat.id == registry.defaults.chat_model
+
+    default_embed = registry.get_embedding_model()
+    assert default_embed.id == registry.defaults.embedding_model
 
 
 def test_registry_duplicate_chat_id() -> None:
@@ -196,3 +194,4 @@ def test_settings_paths() -> None:
     assert settings.get_models_path().exists()
     assert settings.get_rag_path().exists()
     assert settings.get_data_dir().exists()
+

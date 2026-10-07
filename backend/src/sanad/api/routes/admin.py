@@ -31,3 +31,4 @@ async def trigger_ingestion(
         dimension=res.get("dimension"),
         articles_count=res.get("articles_count"),
     )
+

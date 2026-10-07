@@ -18,3 +18,4 @@ include:
   - "src/sanad/**/*.py"
   - "../config/*.yaml"
   - "../data/processed/*.json"
+

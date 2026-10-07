@@ -1,59 +1,87 @@
 defaults:
-  chat_model: openrouter-chat-1
-  embedding_model: openrouter-embed-1
-  judge_model: openrouter-chat-1        # used by RAGAS; should differ from answering model when possible
+  chat_model: nemotron-ultra-free
+  embedding_model: liquid-lfm-embed-free
+  judge_model: nemotron-ultra-free
 
 chat_models:
-  - id: openrouter-chat-1               # internal id used by the API/UI
-    label: "Chat Model 1 (placeholder)" # shown in the UI
-    provider: openrouter                # openrouter | openai_compatible | ollama | vllm
-    model: "REPLACE_ME/provider-model-name"
-    params: { temperature: 0.1, max_tokens: 1024 }
-    pricing: { input_per_1m: 0.0, output_per_1m: 0.0 }
-    supports_streaming: true
-    enabled: true
-
-  - id: openrouter-chat-2
-    label: "Chat Model 2 (placeholder)"
+  - id: nemotron-ultra-free
+    label: "NVIDIA Nemotron 3 Ultra 550B (Free)"
     provider: openrouter
-    model: "REPLACE_ME/second-chat-model"
+    model: "nvidia/nemotron-3-ultra-550b-a55b:free"
     params: { temperature: 0.1, max_tokens: 1024 }
     pricing: { input_per_1m: 0.0, output_per_1m: 0.0 }
     supports_streaming: true
     enabled: true
 
-  - id: ollama-chat-1
-    label: "Ollama Local (placeholder)"
+  - id: gemma-4-free
+    label: "Google Gemma 4 31B IT (Free)"
+    provider: openrouter
+    model: "google/gemma-4-31b-it:free"
+    params: { temperature: 0.1, max_tokens: 1024 }
+    pricing: { input_per_1m: 0.0, output_per_1m: 0.0 }
+    supports_streaming: true
+    enabled: true
+
+  - id: ollama-qwen25-7b
+    label: "Qwen 2.5 7B Instruct (Ollama Local)"
     provider: ollama
     model: "qwen2.5:7b-instruct"
     params: { temperature: 0.1, max_tokens: 1024 }
     pricing: { input_per_1m: 0.0, output_per_1m: 0.0 }
     supports_streaming: true
-    enabled: false
+    enabled: true
+
+  - id: ollama-llama31-8b
+    label: "Llama 3.1 8B (Ollama Local)"
+    provider: ollama
+    model: "llama3.1:8b"
+    params: { temperature: 0.1, max_tokens: 1024 }
+    pricing: { input_per_1m: 0.0, output_per_1m: 0.0 }
+    supports_streaming: true
+    enabled: true
+
+  - id: ollama-gemma4-31b
+    label: "Gemma 4 31B Cloud (Ollama Local)"
+    provider: ollama
+    model: "gemma4:31b-cloud"
+    params: { temperature: 0.1, max_tokens: 1024 }
+    pricing: { input_per_1m: 0.0, output_per_1m: 0.0 }
+    supports_streaming: true
+    enabled: true
 
 embedding_models:
-  - id: openrouter-embed-1
-    label: "Embedding Model 1 (placeholder)"
-    provider: openrouter                # openrouter | openai_compatible | ollama | local_hf
-    model: "REPLACE_ME/embedding-model-name"
-    dimension: null                     # auto-detected on first call if null
-    query_prefix: ""                    # for models that need instruction prefixes
+  - id: liquid-lfm-embed-free
+    label: "Liquid LFM 2.5 Embedding 350M (Free)"
+    provider: openrouter
+    model: "liquid/lfm-2.5-embedding-350m:free"
+    dimension: 1024
+    query_prefix: ""
     document_prefix: ""
     batch_size: 64
     enabled: true
 
-  - id: openai-compat-embed-1
-    label: "OpenAI Compatible Embedding (placeholder)"
-    provider: openai_compatible
-    model: "text-embedding-3-small"
-    dimension: 1536
+  - id: nemotron-embed-free
+    label: "NVIDIA Nemotron 3 Embed 1B (Free)"
+    provider: openrouter
+    model: "nvidia/nemotron-3-embed-1b:free"
+    dimension: 2048
+    query_prefix: ""
+    document_prefix: ""
+    batch_size: 64
+    enabled: true
+
+  - id: llama-nemotron-embed-free
+    label: "NVIDIA Llama Nemotron Embed VL 1B v2 (Free)"
+    provider: openrouter
+    model: "nvidia/llama-nemotron-embed-vl-1b-v2:free"
+    dimension: 2048
     query_prefix: ""
     document_prefix: ""
     batch_size: 64
     enabled: true
 
   - id: local-hf-embed-1
-    label: "Local sentence-transformers (placeholder)"
+    label: "Local sentence-transformers BGE-M3 (Offline)"
     provider: local_hf
     model: "BAAI/bge-m3"
     device: auto
@@ -70,5 +98,6 @@ providers:
     api_key_env: OPENAI_COMPAT_API_KEY
   ollama:
     base_url: "http://localhost:11434"
+    base_url_env: OLLAMA_BASE_URL
   local_hf:
     base_url: "local"
