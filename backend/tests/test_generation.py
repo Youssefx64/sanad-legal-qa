@@ -277,3 +277,52 @@ async def test_sanad_rag_facade_end_to_end(mock_retrieved_chunks: list[SearchRes
     assert len(stream_events) > 0
     assert any(e.event == "token" for e in stream_events)
     assert any(e.event == "done" for e in stream_events)
+
+
+@pytest.mark.asyncio
+async def test_mock_mode_statutory_synthesis(
+    mock_retrieved_chunks: list[SearchResult],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test deterministic synthesis in mock mode without any external provider call."""
+    from sanad.config.settings import get_settings
+
+    monkeypatch.setenv("MOCK_MODE", "true")
+    get_settings.cache_clear()
+
+    answerer = LegalAnswerer()
+
+    # Dummy provider that raises if called
+    class BrokenProvider:
+        async def complete(self, *args, **kwargs):
+            raise AssertionError("Provider should not be called in mock mode!")
+
+        async def stream(self, *args, **kwargs):
+            raise AssertionError("Provider should not be called in mock mode!")
+
+    res = await answerer.generate(
+        question="ما هي أحكام المادة 147؟",
+        retrieved_chunks=mock_retrieved_chunks,
+        provider=BrokenProvider(),  # type: ignore[arg-type]
+    )
+
+    assert "المادة 147" in res.answer
+    assert res.model == "mock-statutory-synthesis"
+    assert len(res.citations) == 1
+    assert res.citations[0].article_number == 147
+
+    # Test streaming in mock mode
+    events = []
+    async for ev in answerer.stream_generate(
+        question="ما هي أحكام المادة 147؟",
+        retrieved_chunks=mock_retrieved_chunks,
+        provider=BrokenProvider(),  # type: ignore[arg-type]
+    ):
+        events.append(ev)
+
+    assert any(e.event == "token" for e in events)
+    assert any(e.event == "citations" for e in events)
+    assert any(e.event == "done" for e in events)
+
+    monkeypatch.delenv("MOCK_MODE", raising=False)
+    get_settings.cache_clear()

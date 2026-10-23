@@ -1,0 +1,301 @@
+{
+  "sample_count": 20,
+  "faithfulness": 0.9524999999999999,
+  "answer_relevancy": 0.8649999999999999,
+  "context_precision": 0.6900000000000001,
+  "context_recall": 0.7916666666666666,
+  "hit_rate": 0.85,
+  "mrr": 0.85,
+  "latency_p95": 4.231730050059924,
+  "tokens_per_query": 76.0,
+  "results": [
+    {
+      "question_id": "q01_ar",
+      "faithfulness": 0.95,
+      "answer_relevancy": 0.9,
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "hit_rate": 0.0,
+      "mrr": 0.0,
+      "details": {
+        "reason": "Deterministic statutory evaluation (Mock Mode)",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q01_en",
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.2,
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "hit_rate": 0.0,
+      "mrr": 0.0,
+      "details": {
+        "reason": "Refused to answer in-scope question",
+        "is_refusal": true,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q02_ar",
+      "faithfulness": 0.95,
+      "answer_relevancy": 0.9,
+      "context_precision": 1.0,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Deterministic statutory evaluation (Mock Mode)",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q03_ar",
+      "faithfulness": 0.95,
+      "answer_relevancy": 0.9,
+      "context_precision": 0.2,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Deterministic statutory evaluation (Mock Mode)",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q04_ar",
+      "faithfulness": 0.95,
+      "answer_relevancy": 0.9,
+      "context_precision": 0.2,
+      "context_recall": 0.5,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Deterministic statutory evaluation (Mock Mode)",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q05_ar",
+      "faithfulness": 0.95,
+      "answer_relevancy": 0.9,
+      "context_precision": 1.0,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Deterministic statutory evaluation (Mock Mode)",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q07_ar",
+      "faithfulness": 0.95,
+      "answer_relevancy": 0.9,
+      "context_precision": 1.0,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Deterministic statutory evaluation (Mock Mode)",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q08_ar",
+      "faithfulness": 0.95,
+      "answer_relevancy": 0.9,
+      "context_precision": 0.2,
+      "context_recall": 0.3333333333333333,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Deterministic statutory evaluation (Mock Mode)",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q09_ar",
+      "faithfulness": 0.95,
+      "answer_relevancy": 0.9,
+      "context_precision": 0.0,
+      "context_recall": 0.0,
+      "hit_rate": 0.0,
+      "mrr": 0.0,
+      "details": {
+        "reason": "Deterministic statutory evaluation (Mock Mode)",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q10_ar",
+      "faithfulness": 0.95,
+      "answer_relevancy": 0.9,
+      "context_precision": 0.2,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Deterministic statutory evaluation (Mock Mode)",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q10_en",
+      "faithfulness": 0.95,
+      "answer_relevancy": 0.9,
+      "context_precision": 1.0,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Deterministic statutory evaluation (Mock Mode)",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q12_ar",
+      "faithfulness": 0.95,
+      "answer_relevancy": 0.9,
+      "context_precision": 1.0,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Deterministic statutory evaluation (Mock Mode)",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q13_ar",
+      "faithfulness": 0.95,
+      "answer_relevancy": 0.9,
+      "context_precision": 1.0,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Deterministic statutory evaluation (Mock Mode)",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q13_en",
+      "faithfulness": 0.95,
+      "answer_relevancy": 0.9,
+      "context_precision": 1.0,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Deterministic statutory evaluation (Mock Mode)",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q14_ar",
+      "faithfulness": 0.95,
+      "answer_relevancy": 0.9,
+      "context_precision": 1.0,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Deterministic statutory evaluation (Mock Mode)",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q16_ar",
+      "faithfulness": 0.95,
+      "answer_relevancy": 0.9,
+      "context_precision": 1.0,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Deterministic statutory evaluation (Mock Mode)",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q17_ar",
+      "faithfulness": 0.95,
+      "answer_relevancy": 0.9,
+      "context_precision": 1.0,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Deterministic statutory evaluation (Mock Mode)",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q18_ar",
+      "faithfulness": 0.95,
+      "answer_relevancy": 0.9,
+      "context_precision": 1.0,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Deterministic statutory evaluation (Mock Mode)",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q18_en",
+      "faithfulness": 0.95,
+      "answer_relevancy": 0.9,
+      "context_precision": 1.0,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Deterministic statutory evaluation (Mock Mode)",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    },
+    {
+      "question_id": "q19_ar",
+      "faithfulness": 0.95,
+      "answer_relevancy": 0.9,
+      "context_precision": 1.0,
+      "context_recall": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 1.0,
+      "details": {
+        "reason": "Deterministic statutory evaluation (Mock Mode)",
+        "is_refusal": false,
+        "is_refusal_expected": false
+      }
+    }
+  ],
+  "metadata": {
+    "subset": "ci",
+    "top_k": 5,
+    "chat_model_id": null,
+    "embedding_model_id": null,
+    "is_mock": true,
+    "label": "MOCK: deterministic placeholder scores, NOT a real RAGAS evaluation"
+  }
+}
