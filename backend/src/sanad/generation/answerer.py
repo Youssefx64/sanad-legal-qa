@@ -7,6 +7,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from sanad.config.settings import get_settings
 from sanad.generation.citations import CitationItem, extract_citations
 from sanad.generation.prompts import (
     REFUSAL_AR,
@@ -134,25 +135,34 @@ class LegalAnswerer:
             language_mode=language_mode,
         )
 
-        try:
-            resp = await provider.complete(
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
-            )
-            raw_answer = resp.content
-            usage = resp.usage
-            model_name = resp.model
-        except Exception as e:
-            logger.warning(
-                "Chat provider completion failed (%s); generating deterministic synthesis from retrieved articles.",
-                e,
-            )
+        settings = get_settings()
+        if settings.is_mock_mode:
+            logger.info("MOCK_MODE active: generating deterministic statutory synthesis.")
             raw_answer = build_statutory_synthesis(
                 retrieved_chunks, is_ar, self.refusal_message_ar, self.refusal_message_en
             )
             usage = ChatUsage(prompt_tokens=50, completion_tokens=30, total_tokens=80)
-            model_name = "offline-grounded-fallback"
+            model_name = "mock-statutory-synthesis"
+        else:
+            try:
+                resp = await provider.complete(
+                    messages=messages,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                )
+                raw_answer = resp.content
+                usage = resp.usage
+                model_name = resp.model
+            except Exception as e:
+                logger.warning(
+                    "Chat provider completion failed (%s); generating deterministic synthesis from retrieved articles.",
+                    e,
+                )
+                raw_answer = build_statutory_synthesis(
+                    retrieved_chunks, is_ar, self.refusal_message_ar, self.refusal_message_en
+                )
+                usage = ChatUsage(prompt_tokens=50, completion_tokens=30, total_tokens=80)
+                model_name = "offline-grounded-fallback"
 
         final_answer = raw_answer
         grounding_res = GroundingCheckResult(is_grounded=True, reason="Unguarded")
@@ -217,33 +227,48 @@ class LegalAnswerer:
         accumulated_tokens: list[str] = []
         total_usage = ChatUsage()
 
-        try:
-            async for chunk in provider.stream(
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
-            ):
-                if chunk.content:
-                    accumulated_tokens.append(chunk.content)
-                    yield StreamEvent(event="token", data=chunk.content)
-                if chunk.usage:
-                    total_usage = chunk.usage
-        except Exception as e:
-            logger.warning(
-                "Streaming from provider failed (%s); streaming deterministic synthesis from retrieved articles.",
-                e,
-            )
-            fallback_text = build_statutory_synthesis(
+        settings = get_settings()
+        if settings.is_mock_mode:
+            logger.info("MOCK_MODE active: streaming deterministic statutory synthesis.")
+            synth_text = build_statutory_synthesis(
                 retrieved_chunks, is_ar, self.refusal_message_ar, self.refusal_message_en
             )
-
-            words = fallback_text.split(" ")
+            words = synth_text.split(" ")
             for i, w in enumerate(words):
                 prefix = "" if i == 0 else " "
                 token = prefix + w
                 accumulated_tokens.append(token)
                 yield StreamEvent(event="token", data=token)
                 await asyncio.sleep(0.01)
+            total_usage = ChatUsage(prompt_tokens=50, completion_tokens=30, total_tokens=80)
+        else:
+            try:
+                async for chunk in provider.stream(
+                    messages=messages,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                ):
+                    if chunk.content:
+                        accumulated_tokens.append(chunk.content)
+                        yield StreamEvent(event="token", data=chunk.content)
+                    if chunk.usage:
+                        total_usage = chunk.usage
+            except Exception as e:
+                logger.warning(
+                    "Streaming from provider failed (%s); streaming deterministic synthesis from retrieved articles.",
+                    e,
+                )
+                fallback_text = build_statutory_synthesis(
+                    retrieved_chunks, is_ar, self.refusal_message_ar, self.refusal_message_en
+                )
+
+                words = fallback_text.split(" ")
+                for i, w in enumerate(words):
+                    prefix = "" if i == 0 else " "
+                    token = prefix + w
+                    accumulated_tokens.append(token)
+                    yield StreamEvent(event="token", data=token)
+                    await asyncio.sleep(0.01)
 
         full_text = "".join(accumulated_tokens)
 

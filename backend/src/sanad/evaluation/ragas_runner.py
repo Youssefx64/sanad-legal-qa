@@ -10,6 +10,7 @@ from typing import Any
 import numpy as np
 from pydantic import BaseModel, Field
 
+from sanad.config.settings import get_settings
 from sanad.evaluation.dataset import EvalQuestion, load_eval_dataset
 from sanad.evaluation.judge import LLMJudge, SampleEvaluation
 from sanad.rag import SanadRAG
@@ -36,26 +37,39 @@ class EvaluationReport(BaseModel):
         """Format report as GitHub Flavored Markdown."""
         lines = [
             "# Sanad RAG Evaluation Report",
-            f"**Evaluated Samples:** {self.sample_count}",
-            f"**Date:** {time.strftime('%Y-%m-%d %H:%M:%S UTC', time.gmtime())}",
-            "",
-            "## Aggregate Metrics",
-            "| Metric | Score | Course Target | Gate Threshold |",
-            "| :--- | :--- | :--- | :--- |",
-            f"| **Faithfulness** | **{self.faithfulness:.4f}** | >= 0.85 | >= 0.75 |",
-            f"| **Answer Relevancy** | {self.answer_relevancy:.4f} | >= 0.80 | >= 0.70 |",
-            f"| **Context Precision** | {self.context_precision:.4f} | >= 0.80 | >= 0.70 |",
-            f"| **Context Recall** | {self.context_recall:.4f} | >= 0.80 | >= 0.70 |",
-            f"| **Hit Rate@K** | {self.hit_rate:.4f} | >= 0.85 | >= 0.75 |",
-            f"| **Mean Reciprocal Rank (MRR)** | {self.mrr:.4f} | >= 0.75 | - |",
-            f"| **Latency P95** | {self.latency_p95:.1f} ms | < 2500 ms | - |",
-            f"| **Tokens per Query** | {self.tokens_per_query:.1f} tokens | - | - |",
-            "",
-            "## Quality Gate Verdict",
-            f"- **Status:** {'PASSED' if self.faithfulness >= 0.75 else 'FAILED'}",
-            f"- **Alert:** {'Nominal' if self.faithfulness >= 0.80 else 'Alert (< 0.80)'}",
-            "",
         ]
+        if self.metadata.get("is_mock"):
+            lines.extend(
+                [
+                    "> [!WARNING]",
+                    "> **MOCK: deterministic placeholder scores, NOT a real RAGAS evaluation**",
+                    "> This evaluation ran in offline Mock Mode using deterministic statutory heuristics.",
+                    "",
+                ]
+            )
+        lines.extend(
+            [
+                f"**Evaluated Samples:** {self.sample_count}",
+                f"**Date:** {time.strftime('%Y-%m-%d %H:%M:%S UTC', time.gmtime())}",
+                "",
+                "## Aggregate Metrics",
+                "| Metric | Score | Course Target | Gate Threshold |",
+                "| :--- | :--- | :--- | :--- |",
+                f"| **Faithfulness** | **{self.faithfulness:.4f}** | >= 0.85 | >= 0.75 |",
+                f"| **Answer Relevancy** | {self.answer_relevancy:.4f} | >= 0.80 | >= 0.70 |",
+                f"| **Context Precision** | {self.context_precision:.4f} | >= 0.80 | >= 0.70 |",
+                f"| **Context Recall** | {self.context_recall:.4f} | >= 0.80 | >= 0.70 |",
+                f"| **Hit Rate@K** | {self.hit_rate:.4f} | >= 0.85 | >= 0.75 |",
+                f"| **Mean Reciprocal Rank (MRR)** | {self.mrr:.4f} | >= 0.75 | - |",
+                f"| **Latency P95** | {self.latency_p95:.1f} ms | < 2500 ms | - |",
+                f"| **Tokens per Query** | {self.tokens_per_query:.1f} tokens | - | - |",
+                "",
+                "## Quality Gate Verdict",
+                f"- **Status:** {'PASSED' if self.faithfulness >= 0.75 else 'FAILED'}",
+                f"- **Alert:** {'Nominal' if self.faithfulness >= 0.80 else 'Alert (< 0.80)'}",
+                "",
+            ]
+        )
         return "\n".join(lines)
 
 
@@ -143,6 +157,9 @@ class RagasRunner:
         latency_p95 = float(np.percentile(latencies, 95)) if latencies else 0.0
         tokens_mean = float(np.mean(tokens_list)) if tokens_list else 0.0
 
+        settings = get_settings()
+        is_mock = bool(settings.is_mock_mode or (self.judge.provider is None))
+
         report = EvaluationReport(
             sample_count=sample_count,
             faithfulness=faithfulness_mean,
@@ -159,6 +176,12 @@ class RagasRunner:
                 "top_k": top_k,
                 "chat_model_id": chat_model_id,
                 "embedding_model_id": embedding_model_id,
+                "is_mock": is_mock,
+                "label": (
+                    "MOCK: deterministic placeholder scores, NOT a real RAGAS evaluation"
+                    if is_mock
+                    else "REAL RAGAS EVALUATION"
+                ),
             },
         )
         return report

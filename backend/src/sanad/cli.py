@@ -216,6 +216,7 @@ def evaluate(
     """Run RAG evaluation suite and quality gate."""
     import asyncio
 
+    from sanad.config.settings import get_settings
     from sanad.evaluation.gate import evaluate_quality_gate
     from sanad.evaluation.ragas_runner import RagasRunner
 
@@ -239,12 +240,23 @@ def evaluate(
         typer.secho(f"Evaluation failed: {e}", fg=typer.colors.RED, err=True)
         raise typer.Exit(code=1) from e
 
-    output_dir.mkdir(parents=True, exist_ok=True)
-    json_path = output_dir / "ragas_results.json"
-    md_path = output_dir / "ragas_results.md"
+    settings = get_settings()
+    is_mock = bool(report.metadata.get("is_mock", settings.is_mock_mode))
+
+    target_dir = output_dir / "mock" if is_mock else output_dir
+    target_dir.mkdir(parents=True, exist_ok=True)
+    json_path = target_dir / "ragas_results.json"
+    md_path = target_dir / "ragas_results.md"
     json_path.write_text(report.model_dump_json(indent=2), encoding="utf-8")
     md_path.write_text(report.to_markdown(), encoding="utf-8")
     typer.secho(f"Saved evaluation reports to {json_path} and {md_path}", fg=typer.colors.GREEN)
+
+    if is_mock:
+        typer.secho(
+            "\n⚠️  MOCK: deterministic placeholder scores, NOT a real RAGAS evaluation",
+            fg=typer.colors.YELLOW,
+            bold=True,
+        )
 
     # Log to MLflow
     params = {
@@ -252,11 +264,12 @@ def evaluate(
         "top_k": top_k,
         "chat_model": chat_model or "default",
         "embedding_model": embedding_model or "default",
+        "is_mock": is_mock,
     }
     run_id = runner.log_to_mlflow(
         report=report,
         experiment_name=experiment_name,
-        run_name=f"eval_{subset}",
+        run_name=f"eval_{subset}{'_mock' if is_mock else ''}",
         params=params,
     )
     if run_id:
@@ -277,7 +290,14 @@ def evaluate(
                 err=True,
             )
             raise typer.Exit(code=1)
-        typer.secho("Quality gate PASSED.", fg=typer.colors.GREEN, bold=True)
+        if is_mock:
+            typer.secho(
+                "Quality gate PASSED (MOCK: deterministic placeholder scores, NOT a real RAGAS evaluation).",
+                fg=typer.colors.YELLOW,
+                bold=True,
+            )
+        else:
+            typer.secho("Quality gate PASSED.", fg=typer.colors.GREEN, bold=True)
 
 
 @app.command()

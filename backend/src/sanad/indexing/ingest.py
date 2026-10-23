@@ -50,6 +50,23 @@ async def run_ingestion(
     target_model_id = embedding_model_id or registry.defaults.embedding_model
     model_cfg = registry.get_embedding_model(target_model_id)
 
+    if settings.is_mock_mode:
+        logger.info(
+            "Running ingestion in MOCK MODE: validating statutory corpus for local BM25 retrieval."
+        )
+        with path.open("r", encoding="utf-8") as f:
+            articles_data = json.load(f)
+        articles = [ArticleRecord.model_validate(item) for item in articles_data]
+        chunks = chunk_corpus(articles)
+        return {
+            "collection_name": "mock_bm25_statutory_corpus",
+            "model_id": target_model_id or "mock-bm25",
+            "dimension": 1536,
+            "corpus_hash": corpus_hash,
+            "chunks_count": len(chunks),
+            "status": "mock_mode_active",
+        }
+
     factory = get_provider_factory()
     provider: EmbeddingProvider = factory.get_embedding_provider(target_model_id)
 

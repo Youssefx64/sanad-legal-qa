@@ -180,6 +180,7 @@ class SanadRAG:
             bm25_index=self.bm25_index,
             reranker=self.reranker,
             top_k=5,
+            enable_dense=not self.settings.is_mock_mode,
         )
 
     async def query(

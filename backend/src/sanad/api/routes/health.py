@@ -31,4 +31,5 @@ async def health_check(
         qdrant=qdrant_healthy,
         models_loaded=models_count,
         version="0.1.0",
+        mock_mode=rag.settings.is_mock_mode,
     )

@@ -16,6 +16,9 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    # Mock / Offline mode
+    mock_mode: bool = Field(default=False, alias="MOCK_MODE")
+
     # API Keys & LLM endpoints
     openrouter_api_key: str | None = Field(default=None, alias="OPENROUTER_API_KEY")
     openai_compat_base_url: str | None = Field(default=None, alias="OPENAI_COMPAT_BASE_URL")
@@ -23,7 +26,9 @@ class Settings(BaseSettings):
     ollama_base_url: str = Field(default="http://localhost:11434", alias="OLLAMA_BASE_URL")
 
     # Security
-    admin_api_key: str = Field(default="sanad-admin-secret-key", alias="ADMIN_API_KEY")
+    admin_api_key: str = Field(
+        default="dev-admin-secret-key-change-in-production", alias="ADMIN_API_KEY"
+    )
     cors_origins: list[str] | str = Field(
         default=["http://localhost:5173", "http://localhost:3000"],
         alias="CORS_ORIGINS",
@@ -57,6 +62,15 @@ class Settings(BaseSettings):
         if isinstance(v, str):
             return [origin.strip() for origin in v.split(",") if origin.strip()]
         return v
+
+    @property
+    def is_mock_mode(self) -> bool:
+        """Check if mock mode is active (explicit flag or absence of remote LLM keys)."""
+        if self.mock_mode:
+            return True
+        has_openrouter = bool(self.openrouter_api_key and self.openrouter_api_key.strip())
+        has_openai = bool(self.openai_compat_api_key and self.openai_compat_api_key.strip())
+        return not (has_openrouter or has_openai)
 
     def get_models_path(self) -> Path:
         """Resolve path to models.yaml."""

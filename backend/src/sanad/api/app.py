@@ -48,7 +48,20 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Application startup and shutdown lifespan management."""
     settings = get_settings()
-    logger.info("Starting Sanad Legal QA API in '%s' environment...", settings.environment)
+    if settings.is_mock_mode:
+        print("\n" + "=" * 70)
+        print("  SANAD LEGAL Q&A — RUNNING IN MOCK MODE (OFFLINE)")
+        print("  External LLM API keys not detected or MOCK_MODE=true.")
+        print("  System operating with local BM25 retrieval and deterministic statutory synthesis.")
+        print("=" * 70 + "\n")
+        logger.info(
+            "Running in MOCK MODE (local BM25 statutory retrieval and deterministic legal synthesis)."
+        )
+    else:
+        logger.info(
+            "Starting Sanad Legal QA API in '%s' environment (live provider mode)...",
+            settings.environment,
+        )
 
     # Initialize RAG singleton on app state
     rag = SanadRAG(settings=settings)

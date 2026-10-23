@@ -206,6 +206,7 @@ class HybridRetriever:
         rrf_k: int = 60,
         enable_exact_lookup: bool = True,
         min_relevance_score: float = 0.0,
+        enable_dense: bool = True,
     ) -> None:
         self.vector_store = vector_store
         self.embedding_provider = embedding_provider
@@ -218,6 +219,7 @@ class HybridRetriever:
         self.rrf_k = rrf_k
         self.enable_exact_lookup = enable_exact_lookup
         self.min_relevance_score = min_relevance_score
+        self.enable_dense = enable_dense
 
     async def retrieve(
         self,
@@ -247,34 +249,35 @@ class HybridRetriever:
 
         # 3. Dense search via Qdrant
         dense_candidates: list[SearchResult] = []
-        try:
-            q_vecs = await self.embedding_provider.embed([query], is_query=True)
-            if q_vecs and self.vector_store.collection_exists(self.collection_name):
-                q_vec = q_vecs[0]
-                filter_dict: dict[str, Any] = {
-                    "exclude_repealed": filters.exclude_repealed,
-                }
-                if filters.book:
-                    filter_dict["book"] = filters.book
-                if filters.chapter:
-                    filter_dict["chapter"] = filters.chapter
+        if self.enable_dense:
+            try:
+                q_vecs = await self.embedding_provider.embed([query], is_query=True)
+                if q_vecs and self.vector_store.collection_exists(self.collection_name):
+                    q_vec = q_vecs[0]
+                    filter_dict: dict[str, Any] = {
+                        "exclude_repealed": filters.exclude_repealed,
+                    }
+                    if filters.book:
+                        filter_dict["book"] = filters.book
+                    if filters.chapter:
+                        filter_dict["chapter"] = filters.chapter
 
-                scored_chunks = self.vector_store.search(
-                    collection_name=self.collection_name,
-                    query_vector=q_vec,
-                    limit=max(limit * 3, 20),
-                    filter_criteria=filter_dict,
-                )
-                for sc in scored_chunks:
-                    dense_candidates.append(
-                        SearchResult(
-                            chunk=sc.chunk,
-                            score=sc.score,
-                            source="dense",
-                        )
+                    scored_chunks = self.vector_store.search(
+                        collection_name=self.collection_name,
+                        query_vector=q_vec,
+                        limit=max(limit * 3, 20),
+                        filter_criteria=filter_dict,
                     )
-        except Exception as e:
-            logger.warning("Dense search failed: %s. Falling back to BM25 only.", e)
+                    for sc in scored_chunks:
+                        dense_candidates.append(
+                            SearchResult(
+                                chunk=sc.chunk,
+                                score=sc.score,
+                                source="dense",
+                            )
+                        )
+            except Exception as e:
+                logger.warning("Dense search failed: %s. Falling back to BM25 only.", e)
 
         # 4. BM25 search
         bm25_candidates: list[SearchResult] = []

@@ -70,6 +70,7 @@ class HealthResponse(BaseModel):
     qdrant: bool
     models_loaded: int
     version: str = "0.1.0"
+    mock_mode: bool = False
 
 
 class ModelsResponse(BaseModel):
