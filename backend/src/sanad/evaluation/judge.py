@@ -20,8 +20,8 @@ class SampleEvaluation(BaseModel):
     """Evaluation result for a single sample."""
 
     question_id: str
-    faithfulness: float = Field(ge=0.0, le=1.0)
-    answer_relevancy: float = Field(ge=0.0, le=1.0)
+    faithfulness: float | None = Field(default=None, ge=0.0, le=1.0)
+    answer_relevancy: float | None = Field(default=None, ge=0.0, le=1.0)
     context_precision: float = Field(ge=0.0, le=1.0)
     context_recall: float = Field(ge=0.0, le=1.0)
     hit_rate: float = Field(ge=0.0, le=1.0)
@@ -102,7 +102,7 @@ class LLMJudge:
         context_snippets: list[str],
         is_refusal: bool,
         is_refusal_expected: bool,
-    ) -> tuple[float, float, str]:
+    ) -> tuple[float | None, float | None, str]:
         """Judge faithfulness and answer relevancy via LLM or deterministic fallback."""
         # Special case: correctly refused out-of-scope question
         if is_refusal and is_refusal_expected:
@@ -117,11 +117,15 @@ class LLMJudge:
             return 0.0, 0.0, "Answered out-of-scope question instead of refusing"
 
         settings = get_settings()
-        if settings.is_mock_mode or self.provider is None:
+        if settings.is_mock_mode:
             # Deterministic statutory scoring for mock/offline evaluation
             faithfulness = 0.95 if not is_refusal else 1.0
             relevancy = 0.90 if not is_refusal else 1.0
             return faithfulness, relevancy, "Deterministic statutory evaluation (Mock Mode)"
+
+        if self.provider is None:
+            logger.error("No LLM judge provider configured or available.")
+            return None, None, "Error: No LLM judge provider available"
 
         prompt = f"""You are an expert impartial legal judge evaluating an Arabic/English legal Q&A system over the Egyptian Civil Code.
 
@@ -157,13 +161,13 @@ Output strictly a valid JSON object with keys:
             elif "```" in cleaned:
                 cleaned = cleaned.split("```")[1].split("```")[0].strip()
             parsed = json.loads(cleaned)
-            faithfulness = max(0.0, min(1.0, float(parsed.get("faithfulness", 0.85))))
-            relevancy = max(0.0, min(1.0, float(parsed.get("answer_relevancy", 0.85))))
+            faithfulness = max(0.0, min(1.0, float(parsed.get("faithfulness", 0.0))))
+            relevancy = max(0.0, min(1.0, float(parsed.get("answer_relevancy", 0.0))))
             reason = str(parsed.get("reason", "LLM judged successfully"))
             return faithfulness, relevancy, reason
         except Exception as e:
-            logger.warning(f"LLM judge completion failed ({e}); falling back to heuristic.")
-            return 0.90, 0.85, f"Fallback due to: {e}"
+            logger.error("LLM judge completion failed: %s", e)
+            return None, None, f"Error: {e}"
 
     async def evaluate_sample(
         self,

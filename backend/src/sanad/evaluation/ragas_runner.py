@@ -21,7 +21,15 @@ logger = logging.getLogger(__name__)
 class EvaluationReport(BaseModel):
     """Aggregated evaluation metrics report."""
 
-    sample_count: int
+    n_total: int = 0
+    n_scored: int = 0
+    n_errors: int = 0
+    mode: str = "live"
+    model: str = "default"
+    timestamp: str = Field(
+        default_factory=lambda: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    )
+    sample_count: int = 0
     faithfulness: float = Field(ge=0.0, le=1.0)
     answer_relevancy: float = Field(ge=0.0, le=1.0)
     context_precision: float = Field(ge=0.0, le=1.0)
@@ -30,6 +38,7 @@ class EvaluationReport(BaseModel):
     mrr: float = Field(ge=0.0, le=1.0)
     latency_p95: float
     tokens_per_query: float
+    metrics: dict[str, float] = Field(default_factory=dict)
     results: list[SampleEvaluation] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
 
@@ -38,7 +47,7 @@ class EvaluationReport(BaseModel):
         lines = [
             "# Sanad RAG Evaluation Report",
         ]
-        if self.metadata.get("is_mock"):
+        if self.mode == "mock" or self.metadata.get("is_mock"):
             lines.extend(
                 [
                     "> [!WARNING]",
@@ -47,10 +56,12 @@ class EvaluationReport(BaseModel):
                     "",
                 ]
             )
+        total_n = self.n_total or self.sample_count
         lines.extend(
             [
-                f"**Evaluated Samples:** {self.sample_count}",
-                f"**Date:** {time.strftime('%Y-%m-%d %H:%M:%S UTC', time.gmtime())}",
+                f"**Evaluated Samples:** {total_n} (Scored: {self.n_scored or total_n}, Errors: {self.n_errors})",
+                f"**Evaluation Mode:** `{self.mode}` | **Judge Model:** `{self.model}`",
+                f"**Date:** {self.timestamp}",
                 "",
                 "## Aggregate Metrics",
                 "| Metric | Score | Course Target | Gate Threshold |",
@@ -132,8 +143,8 @@ class RagasRunner:
                 results.append(
                     SampleEvaluation(
                         question_id=q.id,
-                        faithfulness=0.0,
-                        answer_relevancy=0.0,
+                        faithfulness=None,
+                        answer_relevancy=None,
                         context_precision=0.0,
                         context_recall=0.0,
                         hit_rate=0.0,
@@ -144,12 +155,23 @@ class RagasRunner:
                 latencies.append(0.0)
                 tokens_list.append(0)
 
-        sample_count = len(results)
-        if sample_count == 0:
+        n_total = len(questions)
+        if n_total == 0:
             raise ValueError("No questions evaluated.")
 
-        faithfulness_mean = float(np.mean([r.faithfulness for r in results]))
-        relevancy_mean = float(np.mean([r.answer_relevancy for r in results]))
+        scored_faithfulness = [r.faithfulness for r in results if r.faithfulness is not None]
+        scored_relevancy = [r.answer_relevancy for r in results if r.answer_relevancy is not None]
+        n_scored = len(scored_faithfulness)
+        n_errors = n_total - n_scored
+
+        error_rate = n_errors / n_total
+        if error_rate > 0.2:
+            raise RuntimeError(
+                f"Evaluation failed: error rate {n_errors}/{n_total} ({error_rate:.1%}) exceeds maximum allowable 20%"
+            )
+
+        faithfulness_mean = float(np.mean(scored_faithfulness)) if scored_faithfulness else 0.0
+        relevancy_mean = float(np.mean(scored_relevancy)) if scored_relevancy else 0.0
         precision_mean = float(np.mean([r.context_precision for r in results]))
         recall_mean = float(np.mean([r.context_recall for r in results]))
         hit_rate_mean = float(np.mean([r.hit_rate for r in results]))
@@ -159,9 +181,29 @@ class RagasRunner:
 
         settings = get_settings()
         is_mock = bool(settings.is_mock_mode or (self.judge.provider is None))
+        mode = "mock" if is_mock else "live"
+        model_name = str(self.judge.model_id or "default")
+        timestamp_str = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+        metrics_dict = {
+            "faithfulness": faithfulness_mean,
+            "answer_relevancy": relevancy_mean,
+            "context_precision": precision_mean,
+            "context_recall": recall_mean,
+            "hit_rate@k": hit_rate_mean,
+            "mrr": mrr_mean,
+            "latency_p95": latency_p95,
+            "tokens_per_query": tokens_mean,
+        }
 
         report = EvaluationReport(
-            sample_count=sample_count,
+            n_total=n_total,
+            n_scored=n_scored,
+            n_errors=n_errors,
+            mode=mode,
+            model=model_name,
+            timestamp=timestamp_str,
+            sample_count=n_total,
             faithfulness=faithfulness_mean,
             answer_relevancy=relevancy_mean,
             context_precision=precision_mean,
@@ -170,6 +212,7 @@ class RagasRunner:
             mrr=mrr_mean,
             latency_p95=latency_p95,
             tokens_per_query=tokens_mean,
+            metrics=metrics_dict,
             results=results,
             metadata={
                 "subset": subset,
