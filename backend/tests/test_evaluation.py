@@ -140,3 +140,138 @@ def test_evaluation_report_markdown_formatting() -> None:
     assert "Faithfulness" in md
     assert "0.9200" in md
     assert "PASSED" in md
+
+
+@pytest.mark.asyncio
+async def test_judge_returns_none_on_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that judge returns None on exception and never fakes a good score."""
+    from sanad.config.settings import get_settings
+
+    # Ensure live mode (not mock mode)
+    monkeypatch.setenv("MOCK_MODE", "false")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-test-key")
+    get_settings.cache_clear()
+
+    class FailingChatProvider:
+        async def complete(self, *args, **kwargs):
+            raise ConnectionError("Simulated LLM network timeout or 401 error")
+
+    judge = LLMJudge(chat_provider=FailingChatProvider())  # type: ignore[arg-type]
+    faith, rel, reason = await judge.judge_faithfulness_and_relevancy(
+        question="ما هو نص المادة 147؟",
+        answer="العقد شريعة المتعاقدين.",
+        context_snippets=["العقد شريعة المتعاقدين"],
+        is_refusal=False,
+        is_refusal_expected=False,
+    )
+
+    assert faith is None
+    assert rel is None
+    assert "Error" in reason
+    get_settings.cache_clear()
+
+
+@pytest.mark.asyncio
+async def test_runner_excludes_errors_and_handles_error_rates() -> None:
+    """Test that errors are excluded from averages and error rate > 20% raises RuntimeError."""
+    from unittest.mock import AsyncMock, MagicMock
+
+    from sanad.evaluation.dataset import EvalQuestion
+    from sanad.evaluation.judge import SampleEvaluation
+    from sanad.evaluation.ragas_runner import RagasRunner
+
+    questions = [
+        EvalQuestion(
+            id=f"q{i}",
+            question=f"Q{i}",
+            category="contracts",
+            reference_answer="Ref answer",
+            ground_truth_articles=[1],
+            is_refusal_expected=False,
+        )
+        for i in range(10)
+    ]
+
+    mock_rag = MagicMock()
+    mock_rag.query = AsyncMock(
+        return_value=MagicMock(
+            answer="Answer",
+            retrieved_articles=[],
+            usage=MagicMock(total_tokens=100),
+        )
+    )
+
+    # Case 1: 1 error out of 10 (10% error rate <= 20% threshold)
+    mock_judge = MagicMock()
+    mock_judge.model_id = "test-judge"
+
+    eval_results = []
+    # 9 successful samples with faithfulness = 0.90
+    for i in range(9):
+        eval_results.append(
+            SampleEvaluation(
+                question_id=f"q{i}",
+                faithfulness=0.90,
+                answer_relevancy=0.80,
+                context_precision=1.0,
+                context_recall=1.0,
+                hit_rate=1.0,
+                mrr=1.0,
+            )
+        )
+    # 1 error sample with faithfulness = None
+    eval_results.append(
+        SampleEvaluation(
+            question_id="q9",
+            faithfulness=None,
+            answer_relevancy=None,
+            context_precision=0.0,
+            context_recall=0.0,
+            hit_rate=0.0,
+            mrr=0.0,
+            details={"error": "Judge failed"},
+        )
+    )
+    mock_judge.evaluate_sample = AsyncMock(side_effect=eval_results)
+
+    runner = RagasRunner(rag=mock_rag, judge=mock_judge)
+    report = await runner.evaluate_dataset(questions=questions)
+
+    assert report.n_total == 10
+    assert report.n_scored == 9
+    assert report.n_errors == 1
+    # Average must be 0.90 over the 9 scored samples, NOT diluted by 0.0 or 0.90
+    assert report.faithfulness == pytest.approx(0.90)
+    assert report.answer_relevancy == pytest.approx(0.80)
+
+    # Case 2: 3 errors out of 10 (30% error rate > 20% threshold) -> Must raise RuntimeError
+    high_error_results = []
+    for i in range(7):
+        high_error_results.append(
+            SampleEvaluation(
+                question_id=f"q{i}",
+                faithfulness=0.90,
+                answer_relevancy=0.80,
+                context_precision=1.0,
+                context_recall=1.0,
+                hit_rate=1.0,
+                mrr=1.0,
+            )
+        )
+    for i in range(7, 10):
+        high_error_results.append(
+            SampleEvaluation(
+                question_id=f"q{i}",
+                faithfulness=None,
+                answer_relevancy=None,
+                context_precision=0.0,
+                context_recall=0.0,
+                hit_rate=0.0,
+                mrr=0.0,
+                details={"error": "Judge failed"},
+            )
+        )
+    mock_judge.evaluate_sample = AsyncMock(side_effect=high_error_results)
+
+    with pytest.raises(RuntimeError, match="error rate 3/10"):
+        await runner.evaluate_dataset(questions=questions)
